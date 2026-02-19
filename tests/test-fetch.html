@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API</title>
+</head>
+<body>
+    <h1>Testing API Connection</h1>
+    <button onclick="testAPI()">Test Get Characters</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            const resultEl = document.getElementById('result');
+            try {
+                resultEl.textContent = 'Fetching...';
+                const response = await fetch('http://localhost:3001/api/characters');
+                console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Data received:', data);
+                resultEl.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                resultEl.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Auto test on load
+        window.onload = () => testAPI();
+    </script>
+</body>
+</html>

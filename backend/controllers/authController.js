@@ -38,7 +38,9 @@ export async function signup(req, res) {
 
 // Login user - Menggunakan Supabase Auth
 export async function login(req, res) {
-  const { email, password } = req.body;
+  // Accept both 'email' or 'username' as the login identifier (username is email for Supabase)
+  const email = req.body.email || req.body.username;
+  const { password } = req.body;
   
   if (!email || !password) {
     return res.status(400).json({ error: 'Email dan password diperlukan' });

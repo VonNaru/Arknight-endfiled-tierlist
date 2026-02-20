@@ -1,83 +1,78 @@
-import { getAuthDb } from '../database/db.js';
-import bcrypt from 'bcrypt';
+import { supabase } from '../config/supabase.js';
 
-// Middleware untuk cek apakah user adalah admin
-export function isAdmin(req, res, next) {
-  const { username, password } = req.body;
-  
-  if (!username || !password) {
-    return res.status(401).json({ error: 'Username dan password diperlukan' });
-  }
-  
+// Middleware untuk cek apakah user adalah admin (token-based)
+export async function isAdmin(req, res, next) {
   try {
-    const db = getAuthDb();
-    const stmt = db.prepare('SELECT id, username, email, password, role FROM users WHERE username = ?');
-    stmt.bind([username]);
+    const authHeader = req.headers.authorization;
     
-    if (stmt.step()) {
-      const user = stmt.getAsObject();
-      stmt.free();
-      
-      // Verifikasi password dengan bcrypt
-      const isPasswordValid = bcrypt.compareSync(password, user.password);
-      
-      if (isPasswordValid && user.role === 'admin') {
-        // Jangan kirim password ke req.user
-        req.user = {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role
-        };
-        next();
-      } else {
-        res.status(403).json({ error: 'Akses ditolak. Hanya admin yang dapat melakukan aksi ini.' });
-      }
-    } else {
-      stmt.free();
-      res.status(403).json({ error: 'Akses ditolak. Hanya admin yang dapat melakukan aksi ini.' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Token tidak ditemukan' });
     }
+    
+    const token = authHeader.substring(7);
+    
+    // Verify token dengan Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return res.status(401).json({ error: 'Token tidak valid' });
+    }
+    
+    // Get user profile untuk cek role
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
+    if (profileError || !profile || profile.role !== 'admin') {
+      return res.status(403).json({ error: 'Akses ditolak. Hanya admin yang dapat melakukan aksi ini.' });
+    }
+    
+    req.user = {
+      id: user.id,
+      email: user.email,
+      username: profile.username,
+      role: profile.role
+    };
+    next();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
-// Middleware untuk verifikasi login
-export function authenticate(req, res, next) {
-  const { username, password } = req.body;
-  
-  if (!username || !password) {
-    return res.status(401).json({ error: 'Username dan password diperlukan' });
-  }
-  
+// Middleware untuk verifikasi login (token-based)
+export async function authenticate(req, res, next) {
   try {
-    const db = getAuthDb();
-    const stmt = db.prepare('SELECT id, username, email, password, role FROM users WHERE username = ?');
-    stmt.bind([username]);
+    const authHeader = req.headers.authorization;
     
-    if (stmt.step()) {
-      const user = stmt.getAsObject();
-      stmt.free();
-      
-      // Verifikasi password dengan bcrypt
-      const isPasswordValid = bcrypt.compareSync(password, user.password);
-      
-      if (isPasswordValid) {
-        // Jangan kirim password ke req.user
-        req.user = {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role
-        };
-        next();
-      } else {
-        res.status(401).json({ error: 'Username atau password salah' });
-      }
-    } else {
-      stmt.free();
-      res.status(401).json({ error: 'Username atau password salah' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Token tidak ditemukan' });
     }
+    
+    const token = authHeader.substring(7);
+    
+    // Verify token dengan Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return res.status(401).json({ error: 'Token tidak valid' });
+    }
+    
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
+    req.user = {
+      id: user.id,
+      email: user.email,
+      username: profile?.username || user.user_metadata?.username,
+      role: profile?.role || 'user'
+    };
+    next();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

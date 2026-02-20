@@ -190,16 +190,14 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     }
     
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3001/api/characters/${editingCharacter.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...characterForm,
-          username: user.username,
-          password: 'dummy'
-        }),
+        body: JSON.stringify(characterForm),
       });
       
       const data = await response.json();
@@ -232,16 +230,14 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     }
     
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/characters', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...characterForm,
-          username: user.username,
-          password: 'dummy' // You might want to use token-based auth instead
-        }),
+        body: JSON.stringify(characterForm),
       });
       
       const data = await response.json();

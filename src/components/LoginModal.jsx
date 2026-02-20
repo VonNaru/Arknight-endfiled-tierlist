@@ -142,6 +142,10 @@ export default function LoginModal({ onClose, onLoginSuccess }) {
         if (isLogin) {
           // Login berhasil
           localStorage.setItem('user', JSON.stringify(data.user));
+          // Store session token
+          if (data.session && data.session.access_token) {
+            localStorage.setItem('token', data.session.access_token);
+          }
           setSuccess('Login berhasil!');
           setTimeout(() => {
             onLoginSuccess(data.user);

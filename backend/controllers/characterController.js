@@ -5,23 +5,7 @@ export async function getAllCharacters(req, res) {
   try {
     const { data, error } = await supabase
       .from('characters')
-      .select(`
-        id,
-        name,
-        tier,
-        skill,
-        ultimate,
-        image_url,
-        element_id,
-        elements(name),
-        rarity_id,
-        rarities(name, stars, display_text),
-        role_id,
-        roles(name, display_text, icon),
-        weapon_id,
-        weapons(name, weapon_type)
-      `)
-      .order('rarity', { ascending: false })
+      .select('*')
       .order('name');
     
     if (error) throw error;
@@ -186,32 +170,3 @@ export async function addRating(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
-
-// GET all characters dengan relasi
-export const getAllCharacters = async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('characters')
-      .select(`
-        id,
-        name,
-        tier,
-        skill,
-        ultimate,
-        image_url,
-        element_id,
-        elements(name),
-        rarity_id,
-        rarities(name, stars, display_text),
-        role_id,
-        roles(name, display_text, icon),
-        weapon_id,
-        weapons(name, weapon_type)
-      `);
-
-    if (error) throw error;
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};

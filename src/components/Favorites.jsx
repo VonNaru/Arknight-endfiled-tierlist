@@ -1,38 +1,65 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../api/api';
 
-const API_URL = 'http://localhost:3001/api';
 const FAVORITES_STORAGE_KEY = 'zzz-favorites';
 
-export default function Favorites() {
+export default function Favorites({ user }) {
   const [favorites, setFavorites] = useState([]);
   const [allCharacters, setAllCharacters] = useState([]);
   const [draggedChar, setDraggedChar] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const tiers = ['S', 'A', 'B', 'C', 'D'];
+  const isLoggedIn = !!user;
 
   useEffect(() => {
-    // Load favorites from localStorage
     loadFavorites();
     loadAllCharacters();
-  }, []);
+  }, [user]);
 
-  const loadFavorites = () => {
+  // Load favorites from backend or localStorage
+  const loadFavorites = async () => {
+    setLoading(true);
+    try {
+      if (isLoggedIn && user.id) {
+        // Load from backend
+        const response = await fetch(`${API_URL}/favorites?userId=${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setFavorites(data);
+        } else {
+          // Fallback to localStorage
+          loadFromLocalStorage();
+        }
+      } else {
+        // Not logged in, use localStorage
+        loadFromLocalStorage();
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+      loadFromLocalStorage();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFromLocalStorage = () => {
     try {
       const savedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
       if (savedFavorites) {
         setFavorites(JSON.parse(savedFavorites));
       }
     } catch (error) {
-      console.error('Error loading favorites:', error);
+      console.error('Error loading from localStorage:', error);
     }
   };
 
-  const saveFavorites = (newFavorites) => {
+  const saveToLocalStorage = (newFavorites) => {
     try {
       localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(newFavorites));
-      setFavorites(newFavorites);
     } catch (error) {
-      console.error('Error saving favorites:', error);
+      console.error('Error saving to localStorage:', error);
     }
   };
 
@@ -46,63 +73,104 @@ export default function Favorites() {
     }
   };
 
-  const handleAddFavorite = (characterId, tier) => {
-    try {
-      // Find character details from allCharacters
-      const character = allCharacters.find(c => c.id === characterId);
-      if (!character) {
-        console.error('Character not found');
-        return;
+  const handleAddFavorite = async (characterId, tier) => {
+    const character = allCharacters.find(c => c.id === characterId);
+    if (!character) return;
+
+    const existingIndex = favorites.findIndex(f => f.character_id === characterId);
+    if (existingIndex !== -1) return;
+
+    const newFavorite = {
+      id: Date.now(),
+      character_id: characterId,
+      custom_tier: tier,
+      notes: '',
+      created_at: new Date().toISOString(),
+      name: character.name,
+      element: character.element,
+      rarity: character.rarity,
+      role: character.role,
+      original_tier: character.tier,
+      image_url: character.image_url
+    };
+
+    const updatedFavorites = [...favorites, newFavorite];
+    setFavorites(updatedFavorites);
+    saveToLocalStorage(updatedFavorites);
+
+    // Sync to backend if logged in
+    if (isLoggedIn && user.id) {
+      setSyncing(true);
+      try {
+        const response = await fetch(`${API_URL}/favorites`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            characterId: characterId,
+            customTier: tier
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Update the ID with the real one from backend
+          const finalFavorites = updatedFavorites.map(f => 
+            f.character_id === characterId && f.id === newFavorite.id
+              ? { ...f, id: data.favorite.id }
+              : f
+          );
+          setFavorites(finalFavorites);
+          saveToLocalStorage(finalFavorites);
+        }
+      } catch (error) {
+        console.error('Error syncing to backend:', error);
+      } finally {
+        setSyncing(false);
       }
-
-      // Check if already in favorites
-      const existingIndex = favorites.findIndex(f => f.character_id === characterId);
-      if (existingIndex !== -1) {
-        console.log('Character already in favorites');
-        return;
-      }
-
-      // Create new favorite object
-      const newFavorite = {
-        id: Date.now(), // Use timestamp as unique ID
-        character_id: characterId,
-        custom_tier: tier,
-        notes: '',
-        created_at: new Date().toISOString(),
-        name: character.name,
-        element: character.element,
-        rarity: character.rarity,
-        role: character.role,
-        original_tier: character.tier,
-        image_url: character.image_url
-      };
-
-      const updatedFavorites = [...favorites, newFavorite];
-      saveFavorites(updatedFavorites);
-    } catch (error) {
-      console.error('Error adding favorite:', error);
     }
   };
 
-  const handleUpdateFavorite = (favoriteId, newTier) => {
-    try {
-      const updatedFavorites = favorites.map(fav => 
-        fav.id === favoriteId 
-          ? { ...fav, custom_tier: newTier }
-          : fav
-      );
-      saveFavorites(updatedFavorites);
-    } catch (error) {
-      console.error('Error updating favorite:', error);
+  const handleUpdateFavorite = async (favoriteId, newTier) => {
+    const updatedFavorites = favorites.map(fav => 
+      fav.id === favoriteId ? { ...fav, custom_tier: newTier } : fav
+    );
+    setFavorites(updatedFavorites);
+    saveToLocalStorage(updatedFavorites);
+
+    // Sync to backend if logged in
+    if (isLoggedIn && user.id) {
+      setSyncing(true);
+      try {
+        await fetch(`${API_URL}/favorites/${favoriteId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customTier: newTier })
+        });
+      } catch (error) {
+        console.error('Error syncing update:', error);
+      } finally {
+        setSyncing(false);
+      }
     }
   };
 
-  const handleRemoveFavorite = (favoriteId) => {
-    try {
-      const updatedFavorites = favorites.filter(fav => fav.id !== favoriteId);
-      saveFavorites(updatedFavorites);
-    } catch (error) {
-      console.error('Error removing favorite:', error);
+  const handleRemoveFavorite = async (favoriteId) => {
+    const updatedFavorites = favorites.filter(fav => fav.id !== favoriteId);
+    setFavorites(updatedFavorites);
+    saveToLocalStorage(updatedFavorites);
+
+    // Sync to backend if logged in
+    if (isLoggedIn && user.id) {
+      setSyncing(true);
+      try {
+        await fetch(`${API_URL}/favorites/${favoriteId}`, {
+          method: 'DELETE'
+        });
+      } catch (error) {
+        console.error('Error syncing delete:', error);
+      } finally {
+        setSyncing(false);
+      }
     }
   };
 
@@ -163,33 +231,51 @@ export default function Favorites() {
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>🌟 My Personal Tier List</h2>
-      <p style={styles.subtitle}>Drag and drop characters to create your own tier list!</p>
+      <p style={styles.subtitle}>
+        Drag and drop characters to create your own tier list!
+        {isLoggedIn && (
+          <span style={{ marginLeft: '10px', color: syncing ? '#feca57' : '#4ecdc4' }}>
+            {syncing ? '⏳ Syncing...' : '☁️ Synced to cloud'}
+          </span>
+        )}
+        {!isLoggedIn && (
+          <span style={{ marginLeft: '10px', color: '#ff6b6b' }}>
+            💾 Saved locally only (Login to sync)
+          </span>
+        )}
+      </p>
 
-      {/* Tier List */}
-      <div style={styles.tierListContainer}>
-        {tiers.map(tier => (
-          <div 
-            key={tier} 
-            style={{...styles.tierRow, backgroundColor: tierColors[tier]}}
-            onDragOver={handleDragOver}
-            onDrop={() => handleDrop(tier)}
-          >
-            <div style={styles.tierLabel}>{tier}</div>
-            <div style={styles.tierContent}>
-              {getCharactersInTier(tier).map(fav => (
-                <div 
-                  key={fav.id} 
-                  style={styles.characterCard}
-                  draggable
-                  onDragStart={() => handleDragStart(fav, true, fav.id)}
-                  onDoubleClick={() => handleRemoveFavorite(fav.id)}
-                  title="Drag to move tier | Double click to remove"
-                >
-                  <img src={fav.image_url} alt={fav.name} style={styles.charImage} />
-                  <div style={styles.charName}>{fav.name}</div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '50px', color: '#667eea' }}>
+          Loading favorites...
+        </div>
+      ) : (
+        <>
+          {/* Tier List */}
+          <div style={styles.tierListContainer}>
+            {tiers.map(tier => (
+              <div 
+                key={tier} 
+                style={{...styles.tierRow, backgroundColor: tierColors[tier]}}
+                onDragOver={handleDragOver}
+                onDrop={() => handleDrop(tier)}
+              >
+                <div style={styles.tierLabel}>{tier}</div>
+                <div style={styles.tierContent}>
+                  {getCharactersInTier(tier).map(fav => (
+                    <div 
+                      key={fav.id} 
+                      style={styles.characterCard}
+                      draggable
+                      onDragStart={() => handleDragStart(fav, true, fav.id)}
+                      onDoubleClick={() => handleRemoveFavorite(fav.id)}
+                      title="Drag to move tier | Double click to remove"
+                    >
+                      <img src={fav.image_url} alt={fav.name} style={styles.charImage} />
+                      <div style={styles.charName}>{fav.name}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
           </div>
         ))}
       </div>
@@ -213,6 +299,8 @@ export default function Favorites() {
           ))}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

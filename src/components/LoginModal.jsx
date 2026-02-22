@@ -128,7 +128,8 @@ export default function LoginModal({ onClose, onLoginSuccess }) {
         ? { username, password }
         : { username, email, password };
         
-      const response = await fetch(`http://localhost:3001${endpoint}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Navbar from './components/Navbar'
 import Home from './components/Home'
-import About from './components/tierlist'
+import TierList from './components/tierlist'
 import Favorites from './components/Favorites'
 import Background from './components/background'
 import AdminPanel from './components/AdminPanel'
 import LoginModal from './components/LoginModal'
+import CharacterDetail from './components/CharacterDetail'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -14,6 +15,7 @@ function App() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [user, setUser] = useState(null)
+  const [selectedCharacterId, setSelectedCharacterId] = useState(null)
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -73,9 +75,9 @@ function App() {
       <Navbar onNavigate={setCurrentPage} />
 
       <div style={{ marginLeft: '170px', marginTop: '80px', padding: '20px' }}>
-        {currentPage === 'home' && <Home />}
-        {currentPage === 'about' && <About key={refreshTrigger} />}
-        {currentPage === 'favorites' && <Favorites key={refreshTrigger} />}
+        {currentPage === 'home' && <Home onCharacterClick={setSelectedCharacterId} />}
+        {currentPage === 'about' && <TierList key={refreshTrigger} />}
+        {currentPage === 'favorites' && <Favorites key={refreshTrigger} user={user} />}
       </div>
 
       {showLoginModal && (
@@ -90,6 +92,13 @@ function App() {
           onClose={handleCloseAdmin} 
           onCharacterAdded={handleCharacterAdded}
           user={user}
+        />
+      )}
+
+      {selectedCharacterId && (
+        <CharacterDetail 
+          characterId={selectedCharacterId}
+          onClose={() => setSelectedCharacterId(null)}
         />
       )}
     </Background>

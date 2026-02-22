@@ -1,89 +1,111 @@
-import { getDb, saveDatabase } from '../database/db.js';
-
-// Helper function to execute SELECT queries
-function executeQuery(query, params = []) {
-  const db = getDb();
-  const stmt = db.prepare(query);
-  if (params.length > 0) {
-    stmt.bind(params);
-  }
-  
-  const results = [];
-  while (stmt.step()) {
-    results.push(stmt.getAsObject());
-  }
-  stmt.free();
-  return results;
-}
-
-// Helper function to execute INSERT/UPDATE/DELETE
-function executeUpdate(query, params = []) {
-  const db = getDb();
-  db.run(query, params);
-  saveDatabase();
-}
+import { supabase } from '../config/supabase.js';
 
 // Get all tier lists
-export function getAllTierLists(req, res) {
+export async function getAllTierLists(req, res) {
   try {
-    const tierLists = executeQuery(`
-      SELECT tl.*, COUNT(tli.id) as item_count 
-      FROM tier_lists tl
-      LEFT JOIN tier_list_items tli ON tl.id = tli.tier_list_id
-      GROUP BY tl.id
-      ORDER BY tl.created_at DESC
-    `);
+    const { data: tierLists, error } = await supabase
+      .from('tier_lists')
+      .select(`
+        *,
+        tier_list_items(id)
+      `)
+      .order('created_at', { ascending: false });
     
-    res.json(tierLists);
+    if (error) throw error;
+    
+    // Add item_count to each tier list
+    const result = tierLists.map(tl => ({
+      ...tl,
+      item_count: tl.tier_list_items?.length || 0,
+      tier_list_items: undefined
+    }));
+    
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
 // Get tier list by ID with items
-export function getTierListById(req, res) {
+export async function getTierListById(req, res) {
   try {
     const { id } = req.params;
     
-    const tierLists = executeQuery('SELECT * FROM tier_lists WHERE id = ?', [id]);
+    const { data: tierList, error } = await supabase
+      .from('tier_lists')
+      .select('*')
+      .eq('id', id)
+      .single();
     
-    if (tierLists.length === 0) {
-      return res.status(404).json({ error: 'Tier list not found' });
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({ error: 'Tier list not found' });
+      }
+      throw error;
     }
     
-    const items = executeQuery(`
-      SELECT tli.*, c.name, c.element, c.rarity, c.role, c.image_url
-      FROM tier_list_items tli
-      JOIN characters c ON tli.character_id = c.id
-      WHERE tli.tier_list_id = ?
-      ORDER BY tli.tier
-    `, [id]);
+    // Get items with character details
+    const { data: items, error: itemsError } = await supabase
+      .from('tier_list_items')
+      .select(`
+        *,
+        characters(name, element, rarity, role, image_url)
+      `)
+      .eq('tier_list_id', id)
+      .order('tier');
     
-    res.json({ ...tierLists[0], items });
+    if (itemsError) throw itemsError;
+    
+    // Flatten character data
+    const flatItems = items.map(item => ({
+      ...item,
+      name: item.characters?.name,
+      element: item.characters?.element,
+      rarity: item.characters?.rarity,
+      role: item.characters?.role,
+      image_url: item.characters?.image_url,
+      characters: undefined
+    }));
+    
+    res.json({ ...tierList, items: flatItems });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
 // Create new tier list
-export function createTierList(req, res) {
+export async function createTierList(req, res) {
   try {
     const { user_name, items } = req.body;
+    const userId = req.user?.id;
     
-    executeUpdate('INSERT INTO tier_lists (user_name) VALUES (?)', [user_name]);
-    const tierListId = executeQuery('SELECT last_insert_rowid() as id')[0].id;
+    const { data: tierList, error } = await supabase
+      .from('tier_lists')
+      .insert([{
+        user_name,
+        user_id: userId
+      }])
+      .select()
+      .single();
+    
+    if (error) throw error;
     
     if (items && items.length > 0) {
-      items.forEach(item => {
-        executeUpdate(
-          'INSERT INTO tier_list_items (tier_list_id, character_id, tier) VALUES (?, ?, ?)',
-          [tierListId, item.character_id, item.tier]
-        );
-      });
+      const itemsToInsert = items.map(item => ({
+        tier_list_id: tierList.id,
+        character_id: item.character_id,
+        tier: item.tier
+      }));
+      
+      const { error: itemsError } = await supabase
+        .from('tier_list_items')
+        .insert(itemsToInsert);
+      
+      if (itemsError) throw itemsError;
     }
     
     res.status(201).json({ 
-      id: tierListId,
+      id: tierList.id,
       message: 'Tier list created successfully' 
     });
   } catch (error) {
@@ -92,21 +114,39 @@ export function createTierList(req, res) {
 }
 
 // Update tier list
-export function updateTierList(req, res) {
+export async function updateTierList(req, res) {
   try {
     const { id } = req.params;
     const { user_name, items } = req.body;
     
-    executeUpdate('UPDATE tier_lists SET user_name = ? WHERE id = ?', [user_name, id]);
-    executeUpdate('DELETE FROM tier_list_items WHERE tier_list_id = ?', [id]);
+    const { error: updateError } = await supabase
+      .from('tier_lists')
+      .update({ user_name })
+      .eq('id', id);
     
+    if (updateError) throw updateError;
+    
+    // Delete existing items
+    const { error: deleteError } = await supabase
+      .from('tier_list_items')
+      .delete()
+      .eq('tier_list_id', id);
+    
+    if (deleteError) throw deleteError;
+    
+    // Insert new items
     if (items && items.length > 0) {
-      items.forEach(item => {
-        executeUpdate(
-          'INSERT INTO tier_list_items (tier_list_id, character_id, tier) VALUES (?, ?, ?)',
-          [id, item.character_id, item.tier]
-        );
-      });
+      const itemsToInsert = items.map(item => ({
+        tier_list_id: id,
+        character_id: item.character_id,
+        tier: item.tier
+      }));
+      
+      const { error: insertError } = await supabase
+        .from('tier_list_items')
+        .insert(itemsToInsert);
+      
+      if (insertError) throw insertError;
     }
     
     res.json({ message: 'Tier list updated successfully' });
@@ -116,12 +156,17 @@ export function updateTierList(req, res) {
 }
 
 // Delete tier list
-export function deleteTierList(req, res) {
+export async function deleteTierList(req, res) {
   try {
     const { id } = req.params;
     
-    executeUpdate('DELETE FROM tier_list_items WHERE tier_list_id = ?', [id]);
-    executeUpdate('DELETE FROM tier_lists WHERE id = ?', [id]);
+    // Items will be deleted automatically via CASCADE
+    const { error } = await supabase
+      .from('tier_lists')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
     
     res.json({ message: 'Tier list deleted successfully' });
   } catch (error) {

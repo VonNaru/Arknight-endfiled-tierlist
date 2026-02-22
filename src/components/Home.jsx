@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { characterAPI } from '../api/api';
-import maluImage from '/images/malu_tuh.jpg'
 
 const styles = {
   container: {
@@ -72,7 +71,7 @@ const styles = {
   }
 };
 
-export default function Home() {
+export default function Home({ onCharacterClick }) {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -121,6 +120,7 @@ export default function Home() {
               }}
               onMouseEnter={() => setHoveredId(char.id)}
               onMouseLeave={() => setHoveredId(null)}
+              onClick={() => onCharacterClick && onCharacterClick(char.id)}
             >
               {char.image_url ? (
                 <img src={char.image_url} alt={char.name} style={styles.characterImage} />

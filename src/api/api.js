@@ -1,4 +1,7 @@
-const API_URL = 'http://localhost:3001/api';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
+
+// Export API_URL for use in other components
+export { API_URL };
 
 // Characters API
 export const characterAPI = {

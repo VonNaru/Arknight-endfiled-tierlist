@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../api/api';
 
 const styles = {
   overlay: {
@@ -125,9 +126,22 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
   const [error, setError] = useState('');
   const [characters, setCharacters] = useState([]);
   const [editingCharacter, setEditingCharacter] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   
   // Check if user is admin
   const isAdmin = user && user.role === 'admin';
+
+  // URL validation helper
+  const isValidUrl = (string) => {
+    if (!string) return true;
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
   
   // Form state untuk karakter baru
   const [characterForm, setCharacterForm] = useState({
@@ -147,12 +161,15 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
   }, [isAdmin]);
 
   const loadCharacters = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/characters');
+      const response = await fetch(`${API_URL}/characters`);
       const data = await response.json();
       setCharacters(data);
     } catch (err) {
       console.error('Error loading characters:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -170,6 +187,7 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
 
   const handleCancelEdit = () => {
     setEditingCharacter(null);
+    setError('');
     setCharacterForm({
       name: '',
       element: '',
@@ -180,6 +198,41 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     });
   };
 
+  const handleDeleteCharacter = async (characterId, characterName) => {
+    if (!isAdmin) {
+      setError('Anda tidak memiliki akses admin');
+      return;
+    }
+
+    if (!confirm(`Apakah kamu yakin ingin menghapus karakter "${characterName}"?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/characters/${characterId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        alert('Karakter berhasil dihapus!');
+        loadCharacters();
+        if (onCharacterAdded) {
+          onCharacterAdded();
+        }
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Gagal menghapus karakter');
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan saat menghapus karakter');
+      console.error(err);
+    }
+  };
+
   const handleUpdateCharacter = async (e) => {
     e.preventDefault();
     setError('');
@@ -188,10 +241,25 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
       setError('Anda tidak memiliki akses admin');
       return;
     }
+
+    // Validation
+    if (!characterForm.name.trim()) {
+      setError('Nama karakter wajib diisi');
+      return;
+    }
+    if (!characterForm.element.trim()) {
+      setError('Element wajib dipilih');
+      return;
+    }
+    if (!characterForm.role.trim()) {
+      setError('Role wajib dipilih');
+      return;
+    }
     
+    setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/characters/${editingCharacter.id}`, {
+      const response = await fetch(`${API_URL}/characters/${editingCharacter.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -217,6 +285,8 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     } catch (err) {
       setError('Terjadi kesalahan saat mengupdate karakter');
       console.error(err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -228,10 +298,29 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
       setError('Anda tidak memiliki akses admin');
       return;
     }
+
+    // Validation
+    if (!characterForm.name.trim()) {
+      setError('Nama karakter wajib diisi');
+      return;
+    }
+    if (!characterForm.element.trim()) {
+      setError('Element wajib dipilih');
+      return;
+    }
+    if (!characterForm.role.trim()) {
+      setError('Role wajib dipilih');
+      return;
+    }
+    if (characterForm.image_url && !isValidUrl(characterForm.image_url)) {
+      setError('Image URL tidak valid');
+      return;
+    }
     
+    setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/characters', {
+      const response = await fetch(`${API_URL}/characters`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,6 +354,8 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     } catch (err) {
       setError('Terjadi kesalahan saat menambahkan karakter');
       console.error(err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -301,7 +392,13 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
             
             {error && <div style={styles.errorMessage}>{error}</div>}
             
-            {!editingCharacter && characters.length > 0 && (
+            {!editingCharacter && loading && (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#667eea' }}>
+                Loading characters...
+              </div>
+            )}
+            
+            {!editingCharacter && !loading && characters.length > 0 && (
               <div style={{ marginBottom: '20px' }}>
                 <h4 style={{ color: '#fff', marginBottom: '10px' }}>Karakter yang Ada:</h4>
                 <div style={{ 
@@ -324,22 +421,40 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
                       <div style={{ color: '#fff' }}>
                         <strong>{char.name}</strong> - {char.tier} ({char.role})
                       </div>
-                      <button
-                        onClick={() => handleEditClick(char)}
-                        style={{
-                          padding: '5px 15px',
-                          backgroundColor: '#667eea',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '5px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#5568d3'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
-                      >
-                        Edit
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => handleEditClick(char)}
+                          style={{
+                            padding: '5px 15px',
+                            backgroundColor: '#667eea',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#5568d3'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#667eea'}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCharacter(char.id, char.name)}
+                          style={{
+                            padding: '5px 15px',
+                            backgroundColor: '#ff4444',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#cc3333'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#ff4444'}
+                        >
+                          Hapus
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -463,17 +578,24 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
               
               <button 
                 type="submit" 
-                style={styles.button}
+                style={{
+                  ...styles.button,
+                  opacity: submitting ? 0.7 : 1,
+                  cursor: submitting ? 'not-allowed' : 'pointer'
+                }}
+                disabled={submitting}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 5px 15px rgba(102, 126, 234, 0.4)';
+                  if (!submitting) {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 5px 15px rgba(102, 126, 234, 0.4)';
+                  }
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)';
                   e.target.style.boxShadow = 'none';
                 }}
               >
-                {editingCharacter ? 'Update Karakter' : 'Tambah Karakter'}
+                {submitting ? 'Processing...' : (editingCharacter ? 'Update Karakter' : 'Tambah Karakter')}
               </button>
             </form>
           </div>

@@ -73,6 +73,13 @@ export const characterAPI = {
     if (!response.ok) throw new Error('Failed to add rating');
     return response.json();
   },
+
+  // Get character skills
+  getSkills: async (characterId) => {
+    const response = await fetch(`${API_URL}/characters/skills/${characterId}`);
+    if (!response.ok) throw new Error('Failed to fetch character skills');
+    return response.json();
+  },
 };
 
 // Tier Lists API

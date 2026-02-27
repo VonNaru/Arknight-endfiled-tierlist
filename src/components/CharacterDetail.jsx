@@ -2,46 +2,38 @@ import { useState, useEffect } from 'react';
 import { characterAPI } from '../api/api';
 
 const styles = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+  container: {
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-    padding: '20px'
+    gap: '30px',
+    padding: '30px',
+    backgroundColor: '#0a0e27',
+    minHeight: '100vh',
+    marginLeft: '170px',
+    marginTop: '80px'
   },
-  modal: {
-    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-    borderRadius: '20px',
-    maxWidth: '800px',
-    width: '100%',
-    maxHeight: '90vh',
-    overflowY: 'auto',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-    position: 'relative'
+  leftPanel: {
+    flex: '0 0 400px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px'
   },
   closeButton: {
-    position: 'absolute',
-    top: '15px',
-    right: '20px',
+    position: 'fixed',
+    top: '90px',
+    right: '30px',
     background: 'none',
     border: 'none',
     color: '#fff',
-    fontSize: '28px',
+    fontSize: '32px',
     cursor: 'pointer',
     zIndex: 10
   },
   imageContainer: {
     position: 'relative',
     width: '100%',
-    height: '300px',
+    height: '450px',
     overflow: 'hidden',
-    borderRadius: '20px 20px 0 0'
+    borderRadius: '15px'
   },
   image: {
     width: '100%',
@@ -67,8 +59,13 @@ const styles = {
     fontWeight: 'bold',
     fontSize: '16px'
   },
-  content: {
-    padding: '25px'
+  rightPanel: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '25px',
+    overflowY: 'auto',
+    maxHeight: 'calc(100vh - 140px)'
   },
   header: {
     display: 'flex',

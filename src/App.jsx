@@ -7,7 +7,7 @@ import Favorites from './components/Favorites'
 import Background from './components/background'
 import AdminPanel from './components/AdminPanel'
 import LoginModal from './components/LoginModal'
-import CharacterDetail from './components/CharacterDetail'
+import CharacterDetailPage from './components/CharacterDetailPage'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -74,11 +74,20 @@ function App() {
       />
       <Navbar onNavigate={setCurrentPage} />
 
-      <div style={{ marginLeft: '170px', marginTop: '80px', padding: '20px' }}>
-        {currentPage === 'home' && <Home onCharacterClick={setSelectedCharacterId} />}
-        {currentPage === 'about' && <TierList key={refreshTrigger} />}
-        {currentPage === 'favorites' && <Favorites key={refreshTrigger} user={user} />}
-      </div>
+      {selectedCharacterId ? (
+        // Full Page Character Detail
+        <CharacterDetailPage 
+          characterId={selectedCharacterId}
+          onClose={() => setSelectedCharacterId(null)}
+        />
+      ) : (
+        // Normal Pages
+        <div style={{ marginLeft: '170px', marginTop: '80px', padding: '20px' }}>
+          {currentPage === 'home' && <Home onCharacterClick={setSelectedCharacterId} />}
+          {currentPage === 'about' && <TierList key={refreshTrigger} />}
+          {currentPage === 'favorites' && <Favorites key={refreshTrigger} user={user} />}
+        </div>
+      )}
 
       {showLoginModal && (
         <LoginModal 
@@ -94,15 +103,9 @@ function App() {
           user={user}
         />
       )}
-
-      {selectedCharacterId && (
-        <CharacterDetail 
-          characterId={selectedCharacterId}
-          onClose={() => setSelectedCharacterId(null)}
-        />
-      )}
     </Background>
   )
 }
+
 
 export default App

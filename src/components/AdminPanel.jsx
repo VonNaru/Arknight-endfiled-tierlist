@@ -243,15 +243,15 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     }
 
     // Validation
-    if (!characterForm.name.trim()) {
+    if (!characterForm.name || !characterForm.name.trim()) {
       setError('Nama karakter wajib diisi');
       return;
     }
-    if (!characterForm.element.trim()) {
+    if (!characterForm.element || !characterForm.element.trim()) {
       setError('Element wajib dipilih');
       return;
     }
-    if (!characterForm.role.trim()) {
+    if (!characterForm.role || !characterForm.role.trim()) {
       setError('Role wajib dipilih');
       return;
     }
@@ -300,15 +300,15 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     }
 
     // Validation
-    if (!characterForm.name.trim()) {
+    if (!characterForm.name || !characterForm.name.trim()) {
       setError('Nama karakter wajib diisi');
       return;
     }
-    if (!characterForm.element.trim()) {
+    if (!characterForm.element || !characterForm.element.trim()) {
       setError('Element wajib dipilih');
       return;
     }
-    if (!characterForm.role.trim()) {
+    if (!characterForm.role || !characterForm.role.trim()) {
       setError('Role wajib dipilih');
       return;
     }

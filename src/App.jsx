@@ -65,6 +65,11 @@ function App() {
     setRefreshTrigger(prev => prev + 1)
   }
 
+  const handleNavigate = (page) => {
+    setCurrentPage(page)
+    setSelectedCharacterId(null) // Close character detail when navigating
+  }
+
   return (
     <Background page={currentPage}>
       <Header 
@@ -72,7 +77,7 @@ function App() {
         user={user}
         onLogout={handleLogout}
       />
-      <Navbar onNavigate={setCurrentPage} />
+      <Navbar onNavigate={handleNavigate} />
 
       {selectedCharacterId ? (
         // Full Page Character Detail

@@ -135,8 +135,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-    overflowY: 'auto',
-    maxHeight: 'calc(100vh - 160px)',
     paddingRight: '20px'
   },
   section: {

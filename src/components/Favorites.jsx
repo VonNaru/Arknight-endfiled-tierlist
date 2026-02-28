@@ -235,7 +235,7 @@ export default function Favorites({ user }) {
         Drag and drop characters to create your own tier list!
         {isLoggedIn && (
           <span style={{ marginLeft: '10px', color: syncing ? '#feca57' : '#4ecdc4' }}>
-            {syncing ? '⏳ Syncing...' : '☁️ Synced to cloud'}
+            {syncing ? '⏳ Syncing...' : ''}
           </span>
         )}
         {!isLoggedIn && (

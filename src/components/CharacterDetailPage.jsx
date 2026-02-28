@@ -27,8 +27,8 @@ const styles = {
     padding: '25px',
     backgroundColor: '#0a0e27',
     minHeight: '100vh',
-    marginLeft: '0px',
-    marginTop: '0px'
+    marginLeft: '170px',
+    marginTop: '80px'
   },
   closeButton: {
     position: 'fixed',
@@ -136,7 +136,7 @@ const styles = {
     flexDirection: 'column',
     gap: '20px',
     overflowY: 'auto',
-    maxHeight: 'calc(100vh - 80px)',
+    maxHeight: 'calc(100vh - 160px)',
     paddingRight: '20px'
   },
   section: {

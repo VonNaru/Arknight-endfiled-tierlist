@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS characters (
     element TEXT,
     rarity INTEGER,
     role TEXT,
+    weapon TEXT,
     tier TEXT DEFAULT 'T3',
     skill TEXT,  -- Kolom baru untuk skill
     ultimate TEXT,  -- Kolom baru untuk ultimate
@@ -245,23 +246,23 @@ CREATE POLICY "Users can update own profile"
 
 -- Insert sample characters
 INSERT INTO characters (
-    name, element, rarity, role, tier, skill, ultimate, image_url,
+    name, element, rarity, role, weapon, tier, skill, ultimate, image_url,
     combat_skill_1_rank, combat_skill_1_mastery,
     combat_skill_2_rank, combat_skill_2_mastery,
     combat_skill_3_rank, combat_skill_3_mastery,
     combat_skill_4_rank, combat_skill_4_mastery
 ) VALUES
-('Jane Doe', NULL, 5, 'Attacker', 'T0', 'Powerful slash attacks', 'Devastating ultimate combo', 'https://img.game8.co/4372195/ea916a2155290708a65bdec8dba028ce.png/show', 9, 95, 9, 90, 8, 85, 8, 80),
-('Yixuan', NULL, 5, 'Attacker', 'T0', 'Swift strikes', 'Thunder storm', 'https://img.game8.co/4178829/017e13743c4762e07e0df875888bf56b.png/show', 9, 92, 9, 88, 9, 90, 8, 82),
-('Miyabi', NULL, 5, 'Attacker', 'T0.5', 'Ice blade dance', 'Frozen domain', 'https://img.game8.co/4059078/d955d184a5e8c2a1841d0f9723a19da0.png/show', 9, 94, 9, 91, 8, 87, 8, 84),
-('Astra Yao', NULL, 5, 'Support', 'T0', 'Team buff', 'Healing wave', 'https://img.game8.co/4080088/fa217d0eba80ff3a1694f354d33cc12e.png/show', 9, 89, 9, 91, 9, 88, 8, 85),
-('Yuzuha', NULL, 5, 'Support', 'T0', 'Shield allies', 'Barrier dome', 'https://img.game8.co/4212687/46603f907c8d4befa538f9bb94dd22d4.png/show', 9, 90, 9, 89, 9, 87, 9, 88),
-('Lucia', NULL, 5, 'Support', 'T0', 'Energy restore', 'Mass regeneration', 'https://img.game8.co/4303634/f8acab2bfbfc82495f4afd63269347a8.png/show', 9, 88, 9, 90, 8, 86, 9, 87),
-('Trigger', NULL, 5, 'Stun', 'T0', 'Stun shot', 'Paralysis field', 'https://img.game8.co/4143972/69524d93a8cd46f584c18ebbbac24e2d.png/show', 9, 93, 9, 89, 9, 91, 8, 83),
-('Ju fufu', NULL, 5, 'Stun', 'T0', 'Heavy impact', 'Earthquake smash', 'https://img.game8.co/4204351/754c4dd9dd679ae1e930f4977645c09a.png/show', 9, 91, 9, 90, 8, 88, 8, 86),
-('Dialyn', NULL, 5, 'Stun', 'T0', 'Chain stun', 'Time stop', 'https://img.game8.co/4348758/b4114e6aa73ddfd3b1c8bead24aa6592.png/show', 9, 92, 9, 92, 9, 89, 8, 85),
-('Seed', NULL, 5, 'Attacker', 'T0.5', 'Nature strike', 'Overgrowth', 'https://img.game8.co/4268683/6bd516365ea3af34ea429bba2141ab5d.png/show', 8, 87, 8, 85, 8, 83, 8, 81),
-('Alice', NULL, 5, 'Attacker', 'T0.5', 'Magic burst', 'Wonderland', 'https://img.game8.co/4212685/2d8f46bc9a469ba89977a3bb97952495.png/show', 8, 84, 8, 86, 8, 82, 8, 79)
+('Jane Doe', 'Physical', 5, 'Attacker', 'Sword', 'T0', 'Powerful slash attacks', 'Devastating ultimate combo', 'https://img.game8.co/4372195/ea916a2155290708a65bdec8dba028ce.png/show', 9, 95, 9, 90, 8, 85, 8, 80),
+('Yixuan', 'Electric', 5, 'Attacker', 'Spear', 'T0', 'Swift strikes', 'Thunder storm', 'https://img.game8.co/4178829/017e13743c4762e07e0df875888bf56b.png/show', 9, 92, 9, 88, 9, 90, 8, 82),
+('Miyabi', 'Ice', 5, 'Attacker', 'Sword', 'T0.5', 'Ice blade dance', 'Frozen domain', 'https://img.game8.co/4059078/d955d184a5e8c2a1841d0f9723a19da0.png/show', 9, 94, 9, 91, 8, 87, 8, 84),
+('Astra Yao', 'Fire', 5, 'Support', 'Whip', 'T0', 'Team buff', 'Healing wave', 'https://img.game8.co/4080088/fa217d0eba80ff3a1694f354d33cc12e.png/show', 9, 89, 9, 91, 9, 88, 8, 85),
+('Yuzuha', 'Ether', 5, 'Support', 'Greatsword', 'T0', 'Shield allies', 'Barrier dome', 'https://img.game8.co/4212687/46603f907c8d4befa538f9bb94dd22d4.png/show', 9, 90, 9, 89, 9, 87, 9, 88),
+('Lucia', 'Physical', 5, 'Support', 'Bow', 'T0', 'Energy restore', 'Mass regeneration', 'https://img.game8.co/4303634/f8acab2bfbfc82495f4afd63269347a8.png/show', 9, 88, 9, 90, 8, 86, 9, 87),
+('Trigger', 'Electric', 5, 'Stun', 'Gun', 'T0', 'Stun shot', 'Paralysis field', 'https://img.game8.co/4143972/69524d93a8cd46f584c18ebbbac24e2d.png/show', 9, 93, 9, 89, 9, 91, 8, 83),
+('Ju fufu', 'Physical', 5, 'Stun', 'Hammer', 'T0', 'Heavy impact', 'Earthquake smash', 'https://img.game8.co/4204351/754c4dd9dd679ae1e930f4977645c09a.png/show', 9, 91, 9, 90, 8, 88, 8, 86),
+('Dialyn', 'Ice', 5, 'Stun', 'Sword', 'T0', 'Chain stun', 'Time stop', 'https://img.game8.co/4348758/b4114e6aa73ddfd3b1c8bead24aa6592.png/show', 9, 92, 9, 92, 9, 89, 8, 85),
+('Seed', 'Ether', 5, 'Attacker', 'Staff', 'T0.5', 'Nature strike', 'Overgrowth', 'https://img.game8.co/4268683/6bd516365ea3af34ea429bba2141ab5d.png/show', 8, 87, 8, 85, 8, 83, 8, 81),
+('Alice', 'Fire', 5, 'Attacker', 'Wand', 'T0.5', 'Magic burst', 'Wonderland', 'https://img.game8.co/4212685/2d8f46bc9a469ba89977a3bb97952495.png/show', 8, 84, 8, 86, 8, 82, 8, 79)
 ON CONFLICT DO NOTHING;
 
 -- ============================================

@@ -42,7 +42,7 @@ export async function getCharacterById(req, res) {
 // Add new character
 export async function addCharacter(req, res) {
   try {
-    const { name, element, rarity, role, tier, skill, ultimate, image_url } = req.body;
+    const { name, element, rarity, role, weapon, tier, skill, ultimate, image_url } = req.body;
     
     const { data, error } = await supabase
       .from('characters')
@@ -51,6 +51,7 @@ export async function addCharacter(req, res) {
         element,
         rarity,
         role,
+        weapon,
         tier: tier || 'T3',
         skill,
         ultimate,
@@ -75,7 +76,7 @@ export async function addCharacter(req, res) {
 export async function updateCharacter(req, res) {
   try {
     const { id } = req.params;
-    const { name, element, rarity, role, tier, skill, ultimate, image_url } = req.body;
+    const { name, element, rarity, role, weapon, tier, skill, ultimate, image_url } = req.body;
     
     const { data, error } = await supabase
       .from('characters')
@@ -84,6 +85,7 @@ export async function updateCharacter(req, res) {
         element,
         rarity,
         role,
+        weapon,
         tier,
         skill,
         ultimate,

@@ -3,6 +3,17 @@ import { API_URL } from '../api/api';
 
 const FAVORITES_STORAGE_KEY = 'zzz-favorites';
 
+// Add hover style for delete button
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  .fav-char-card:hover .delete-btn {
+    opacity: 1 !important;
+  }
+`;
+if (typeof document !== 'undefined') {
+  document.head.appendChild(styleSheet);
+}
+
 export default function Favorites({ user }) {
   const [favorites, setFavorites] = useState([]);
   const [allCharacters, setAllCharacters] = useState([]);
@@ -265,13 +276,23 @@ export default function Favorites({ user }) {
                   {getCharactersInTier(tier).map(fav => (
                     <div 
                       key={fav.id} 
+                      className="fav-char-card"
                       style={styles.characterCard}
                       draggable
                       onDragStart={() => handleDragStart(fav, true, fav.id)}
-                      onDoubleClick={() => handleRemoveFavorite(fav.id)}
-                      title="Drag to move tier | Double click to remove"
+                      title="Drag to move tier | Click X to remove"
                     >
-                      <img src={fav.image_url} alt={fav.name} style={styles.charImage} />
+                      <div style={styles.cardWrapper}>
+                        <img src={fav.image_url} alt={fav.name} style={styles.charImage} />
+                        <button 
+                          className="delete-btn"
+                          style={styles.deleteBtn}
+                          onClick={() => handleRemoveFavorite(fav.id)}
+                          title="Remove from favorites"
+                        >
+                          ✕
+                        </button>
+                      </div>
                       <div style={styles.charName}>{fav.name}</div>
                     </div>
                   ))}
@@ -368,6 +389,13 @@ const styles = {
       transform: 'scale(1.05)'
     }
   },
+  cardWrapper: {
+    position: 'relative',
+    width: '80px',
+    height: '80px',
+    borderRadius: '8px',
+    overflow: 'hidden'
+  },
   charImage: {
     width: '80px',
     height: '80px',
@@ -375,6 +403,28 @@ const styles = {
     borderRadius: '8px',
     border: '2px solid rgba(255,255,255,0.3)',
     backgroundColor: '#1a1a1a'
+  },
+  deleteBtn: {
+    position: 'absolute',
+    top: '2px',
+    right: '2px',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    backgroundColor: '#ff6b6b',
+    border: 'none',
+    borderRadius: '50%',
+    color: '#fff',
+    fontSize: '16px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+    fontWeight: 'bold',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+    zIndex: 10
   },
   charName: {
     fontSize: '10px',

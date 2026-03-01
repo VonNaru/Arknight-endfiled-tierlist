@@ -230,10 +230,10 @@ export default function CharacterDetail({ characterId, onClose }) {
     );
   }
 
-  const element = character.elements?.name || character.element || 'Unknown';
-  const role = character.roles?.display_text || character.role || 'Unknown';
-  const rarity = character.rarities?.display_text || character.rarity || 'N/A';
-  const weapon = character.weapons?.name || 'N/A';
+  const element = character.element || 'Unknown';
+  const role = character.role || 'Unknown';
+  const rarity = character.rarity || 'N/A';
+  const weapon = character.weapon || 'N/A';
 
   return (
     <div style={styles.overlay} onClick={handleOverlayClick}>

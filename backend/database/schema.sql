@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS characters (
     element TEXT,
     rarity INTEGER,
     role TEXT,
+    weapon TEXT,
     tier TEXT DEFAULT 'T3',
     image_url TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -52,16 +53,16 @@ CREATE TABLE IF NOT EXISTS favorites (
 );
 
 -- Insert sample characters with tier
-INSERT INTO characters (name, element, rarity, role, tier, image_url) VALUES
-('Jane Doe', NULL, 5, 'Attacker', 'T0', 'https://img.game8.co/4372195/ea916a2155290708a65bdec8dba028ce.png/show'),
-('Yixuan', NULL, 5, 'Attacker', 'T0', 'https://img.game8.co/4178829/017e13743c4762e07e0df875888bf56b.png/show'),
-('Miyabi', NULL, 5, 'Attacker', 'T0.5', 'https://img.game8.co/4059078/d955d184a5e8c2a1841d0f9723a19da0.png/show'),
-('Astra Yao', NULL, 5, 'Support', 'T0', 'https://img.game8.co/4080088/fa217d0eba80ff3a1694f354d33cc12e.png/show'),
-('Yuzuha', NULL, 5, 'Support', 'T0', 'https://img.game8.co/4212687/46603f907c8d4befa538f9bb94dd22d4.png/show'),
-('Lucia', NULL, 5, 'Support', 'T0', 'https://img.game8.co/4303634/f8acab2bfbfc82495f4afd63269347a8.png/show'),
-('Trigger', NULL, 5, 'Stun', 'T0', 'https://img.game8.co/4143972/69524d93a8cd46f584c18ebbbac24e2d.png/show'),
-('Ju fufu', NULL, 5, 'Stun', 'T0', 'https://img.game8.co/4204351/754c4dd9dd679ae1e930f4977645c09a.png/show'),
-('Dialyn', NULL, 5, 'Stun', 'T0', 'https://img.game8.co/4348758/b4114e6aa73ddfd3b1c8bead24aa6592.png/show'),
-('Seed', NULL, 5, 'Attacker', 'T0.5', 'https://img.game8.co/4268683/6bd516365ea3af34ea429bba2141ab5d.png/show'),
-('Alice', NULL, 5, 'Attacker', 'T0.5', 'https://img.game8.co/4212685/2d8f46bc9a469ba89977a3bb97952495.png/show');
+INSERT INTO characters (name, element, rarity, role, weapon, tier, image_url) VALUES
+('Jane Doe', 'Physical', 5, 'Attacker', 'Sword', 'T0', 'https://img.game8.co/4372195/ea916a2155290708a65bdec8dba028ce.png/show'),
+('Yixuan', 'Electric', 5, 'Attacker', 'Spear', 'T0', 'https://img.game8.co/4178829/017e13743c4762e07e0df875888bf56b.png/show'),
+('Miyabi', 'Ice', 5, 'Attacker', 'Sword', 'T0.5', 'https://img.game8.co/4059078/d955d184a5e8c2a1841d0f9723a19da0.png/show'),
+('Astra Yao', 'Fire', 5, 'Support', 'Whip', 'T0', 'https://img.game8.co/4080088/fa217d0eba80ff3a1694f354d33cc12e.png/show'),
+('Yuzuha', 'Ether', 5, 'Support', 'Greatsword', 'T0', 'https://img.game8.co/4212687/46603f907c8d4befa538f9bb94dd22d4.png/show'),
+('Lucia', 'Physical', 5, 'Support', 'Bow', 'T0', 'https://img.game8.co/4303634/f8acab2bfbfc82495f4afd63269347a8.png/show'),
+('Trigger', 'Electric', 5, 'Stun', 'Gun', 'T0', 'https://img.game8.co/4143972/69524d93a8cd46f584c18ebbbac24e2d.png/show'),
+('Ju fufu', 'Physical', 5, 'Stun', 'Hammer', 'T0', 'https://img.game8.co/4204351/754c4dd9dd679ae1e930f4977645c09a.png/show'),
+('Dialyn', 'Ice', 5, 'Stun', 'Sword', 'T0', 'https://img.game8.co/4348758/b4114e6aa73ddfd3b1c8bead24aa6592.png/show'),
+('Seed', 'Ether', 5, 'Attacker', 'Staff', 'T0.5', 'https://img.game8.co/4268683/6bd516365ea3af34ea429bba2141ab5d.png/show'),
+('Alice', 'Fire', 5, 'Attacker', 'Wand', 'T0.5', 'https://img.game8.co/4212685/2d8f46bc9a469ba89977a3bb97952495.png/show');
 

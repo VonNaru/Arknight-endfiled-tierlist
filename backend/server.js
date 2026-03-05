@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 // import { initializeDatabase } from './database/db.js';
 import characterRoutes from './routes/characters.js';
 import tierListRoutes from './routes/tierLists.js';
+import tiersRoutes from './routes/tiers.js';
 import authRoutes from './routes/auth.js';
 import favoritesRoutes from './routes/favorites.js';
 
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/characters', characterRoutes);
+app.use('/api/tiers', tiersRoutes);
 app.use('/api/tierlists', tierListRoutes);
 app.use('/api/favorites', favoritesRoutes);
 
@@ -48,6 +50,11 @@ app.listen(PORT, () => {
   console.log(`  POST   http://localhost:${PORT}/api/characters (Admin Only)`);
   console.log(`  PUT    http://localhost:${PORT}/api/characters/:id (Admin Only)`);
   console.log(`  DELETE http://localhost:${PORT}/api/characters/:id (Admin Only)`);
+  console.log(`  GET    http://localhost:${PORT}/api/tiers (Public)`);
+  console.log(`  GET    http://localhost:${PORT}/api/tiers/:id (Public)`);
+  console.log(`  POST   http://localhost:${PORT}/api/tiers (Admin Only)`);
+  console.log(`  PUT    http://localhost:${PORT}/api/tiers/:id (Admin Only)`);
+  console.log(`  DELETE http://localhost:${PORT}/api/tiers/:id (Admin Only)`);
   console.log(`  GET    http://localhost:${PORT}/api/tierlists`);
   console.log(`  GET    http://localhost:${PORT}/api/tierlists/:id`);
   console.log(`  POST   http://localhost:${PORT}/api/tierlists`);

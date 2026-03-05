@@ -5,7 +5,7 @@ function Navbar({ onNavigate }) {
     <nav style={navStyle}>
       <img src={maluImage} alt="Malu" style={maluImageStyle} />
       <button style={buttonStyle} onClick={() => onNavigate('home')}>
-        Home
+        Character
       </button>
       <button style={buttonStyle} onClick={() => onNavigate('about')}>
         Tier List

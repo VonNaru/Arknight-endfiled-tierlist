@@ -5,11 +5,27 @@ export async function getAllCharacters(req, res) {
   try {
     const { data, error } = await supabase
       .from('characters')
-      .select('*')
+      .select(`
+        *,
+        tiers(name, color_code),
+        roles(name),
+        elements(name),
+        weapons(name)
+      `)
       .order('name');
     
     if (error) throw error;
-    res.json(data);
+    
+    // Flatten the response to include tier name directly
+    const flattened = data.map(char => ({
+      ...char,
+      tier: char.tiers?.name || 'Unknown',
+      role: char.roles?.name || char.role || 'Unknown',
+      element: char.elements?.name || char.element || 'Unknown',
+      weapon: char.weapons?.name || char.weapon || 'Unknown'
+    }));
+    
+    res.json(flattened);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -22,7 +38,13 @@ export async function getCharacterById(req, res) {
     
     const { data, error } = await supabase
       .from('characters')
-      .select('*')
+      .select(`
+        *,
+        tiers(name, color_code),
+        roles(name),
+        elements(name),
+        weapons(name)
+      `)
       .eq('id', id)
       .single();
     
@@ -33,7 +55,16 @@ export async function getCharacterById(req, res) {
       throw error;
     }
     
-    res.json(data);
+    // Flatten the response
+    const flattened = {
+      ...data,
+      tier: data.tiers?.name || 'Unknown',
+      role: data.roles?.name || data.role || 'Unknown',
+      element: data.elements?.name || data.element || 'Unknown',
+      weapon: data.weapons?.name || data.weapon || 'Unknown'
+    };
+    
+    res.json(flattened);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

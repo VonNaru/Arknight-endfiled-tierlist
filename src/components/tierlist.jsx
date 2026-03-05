@@ -2,24 +2,16 @@ import { useState, useEffect } from 'react'
 import { characterAPI } from '../api/api'
 
 // Tier configurations
-const TIERS = ['T0', 'T0.5', 'T1', 'T1.5', 'T2', 'T3']
-const ROLES = ['Attacker', 'Stun', 'Support']
+const TIERS = ['S', 'A', 'B', 'C', 'D']
+const ROLES = ['Guard', 'Striker', 'Supporter', 'Caster', 'Defender','Vanguard']
 
 const TIER_COLORS = {
-  'T0': '#ff4444',
-  'T0.5': '#ff8844',
-  'T1': '#ffcc44',
-  'T1.5': '#88cc44',
-  'T2': '#44ccff',
-  'T3': '#44ff88'
+  'S': '#FFD700',    // Gold
+  'A': '#FF6B6B',    // Red
+  'B': '#4ECDC4',    // Teal
+  'C': '#95E1D3',    // Mint
+  'D': '#A8DADC'     // Blue
 }
-
-// TIER_ASSIGNMENTS tidak digunakan lagi - semua data dari database
-// const TIER_ASSIGNMENTS = {
-//   'Jane Doe': { tier: 'T0', role: 'Attacker' },
-//   'Yixuan': { tier: 'T0', role: 'Attacker' },
-//   ...
-// }
 
 // Character Card Component
 function CharacterCard({ character, tierColor }) {
@@ -105,12 +97,15 @@ export default function TierList() {
 
     characters.forEach(char => {
       // Gunakan tier dari database (prioritas utama)
-      // Jika tidak ada, gunakan 'T3' sebagai default
-      const tier = char.tier || 'T3'
-      const role = char.role || 'Attacker'
+      // Jika tidak ada, gunakan 'D' sebagai default
+      const tier = char.tier || 'D'
+      const role = char.role || 'Guard'
       
       if (tierData[tier] && tierData[tier][role]) {
         tierData[tier][role].push(char)
+      } else if (!tierData[tier]) {
+        // Jika tier tidak ada di TIERS array, masukkan ke 'D'
+        tierData['D'][role]?.push(char)
       }
     })
 

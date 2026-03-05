@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '../api/api';
+import AdminTierPanel from './AdminTierPanel';
 
 const styles = {
   overlay: {
@@ -119,6 +120,27 @@ const styles = {
     maxHeight: '150px',
     borderRadius: '8px',
     border: '2px solid #333'
+  },
+  tabs: {
+    display: 'flex',
+    gap: '10px',
+    marginBottom: '20px',
+    borderBottom: '2px solid #333',
+  },
+  tabButton: {
+    padding: '10px 20px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#aaa',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    borderBottom: '3px solid transparent',
+    transition: 'all 0.3s',
+  },
+  tabButtonActive: {
+    color: '#fff',
+    borderBottomColor: '#667eea',
   }
 };
 
@@ -128,6 +150,7 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
   const [editingCharacter, setEditingCharacter] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [currentTab, setCurrentTab] = useState('characters'); // 'characters' or 'tiers'
   
   // Check if user is admin
   const isAdmin = user && user.role === 'admin';
@@ -373,6 +396,29 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
         
         <h2 style={styles.h2}>Admin Panel</h2>
         
+        {isAdmin && (
+          <div style={styles.tabs}>
+            <button
+              onClick={() => setCurrentTab('characters')}
+              style={{
+                ...styles.tabButton,
+                ...(currentTab === 'characters' ? styles.tabButtonActive : {})
+              }}
+            >
+              👥 Characters
+            </button>
+            <button
+              onClick={() => setCurrentTab('tiers')}
+              style={{
+                ...styles.tabButton,
+                ...(currentTab === 'tiers' ? styles.tabButtonActive : {})
+              }}
+            >
+              🎯 Tiers
+            </button>
+          </div>
+        )}
+        
         {!user ? (
           <div style={styles.errorMessage}>
             Silakan login terlebih dahulu untuk mengakses panel ini.
@@ -383,7 +429,7 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
             <br /><br />
             <small>Login sebagai: <strong>{user.username}</strong> ({user.role})</small>
           </div>
-        ) : (
+        ) : currentTab === 'characters' ? (
           <div>
             <h3 style={styles.h3}>{editingCharacter ? 'Edit Karakter' : 'Tambah Karakter Baru'}</h3>
             <div style={{ color: '#aaa', marginBottom: '15px', fontSize: '14px' }}>
@@ -599,6 +645,8 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
               </button>
             </form>
           </div>
+        ) : (
+          <AdminTierPanel />
         )}
       </div>
     </div>

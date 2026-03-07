@@ -59,6 +59,7 @@ function CharacterCard({ character, tierColor }) {
 export default function TierList() {
   const [characters, setCharacters] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedRole, setSelectedRole] = useState(null)
 
   useEffect(() => {
     loadCharacters()
@@ -126,12 +127,57 @@ export default function TierList() {
     <div style={{ padding: '20px', backgroundColor: '#1a1a1a', minHeight: '100vh' }}>
       <h1 style={{
         color: 'white',
-        marginBottom: '30px',
+        marginBottom: '20px',
         textAlign: 'center',
         fontSize: '36px'
       }}>
         ZZZ Character Tier List
       </h1>
+
+      {/* Filter Buttons */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '10px',
+        marginBottom: '30px',
+        flexWrap: 'wrap'
+      }}>
+        <button
+          onClick={() => setSelectedRole(null)}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: selectedRole === null ? '#FFD700' : '#333',
+            color: selectedRole === null ? '#000' : '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: selectedRole === null ? 'bold' : 'normal',
+            transition: 'all 0.3s'
+          }}
+        >
+          All
+        </button>
+        {ROLES.map(role => (
+          <button
+            key={role}
+            onClick={() => setSelectedRole(role)}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: selectedRole === role ? '#FF6B6B' : '#333',
+              color: selectedRole === role ? '#fff' : '#aaa',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: selectedRole === role ? 'bold' : 'normal',
+              transition: 'all 0.3s'
+            }}
+          >
+            {role}
+          </button>
+        ))}
+      </div>
 
       <table style={{
         width: '100%',
@@ -149,17 +195,15 @@ export default function TierList() {
             }}>
               Tier
             </th>
-            {ROLES.map(role => (
-              <th key={role} style={{
-                border: '2px solid #333',
-                padding: '12px',
-                backgroundColor: '#333',
-                color: 'white',
-                fontSize: '18px'
-              }}>
-                {role}
-              </th>
-            ))}
+            <th style={{
+              border: '2px solid #333',
+              padding: '12px',
+              backgroundColor: '#333',
+              color: 'white',
+              fontSize: '18px'
+            }}>
+              Characters
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -178,24 +222,31 @@ export default function TierList() {
               }}>
                 {tier}
               </td>
-              {ROLES.map(role => (
-                <td key={role} style={{
-                  border: '2px solid #333',
-                  padding: '12px',
-                  backgroundColor: '#2a2a2a',
-                  verticalAlign: 'top'
-                }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {tierData[tier][role].map(char => (
-                      <CharacterCard
-                        key={char.id}
-                        character={char}
-                        tierColor={TIER_COLORS[tier]}
-                      />
-                    ))}
-                  </div>
-                </td>
-              ))}
+              <td style={{
+                border: '2px solid #333',
+                padding: '12px',
+                backgroundColor: '#2a2a2a',
+                verticalAlign: 'top'
+              }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {selectedRole 
+                    ? tierData[tier][selectedRole]?.map(char => (
+                        <CharacterCard
+                          key={char.id}
+                          character={char}
+                          tierColor={TIER_COLORS[tier]}
+                        />
+                      ))
+                    : ROLES.flatMap(role => tierData[tier][role]).map(char => (
+                        <CharacterCard
+                          key={char.id}
+                          character={char}
+                          tierColor={TIER_COLORS[tier]}
+                        />
+                      ))
+                  }
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>

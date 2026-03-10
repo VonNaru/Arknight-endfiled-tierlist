@@ -44,27 +44,44 @@ export async function getTierListById(req, res) {
       throw error;
     }
     
-    // Get items with character details
+    // Get items with character details and tier info
     const { data: items, error: itemsError } = await supabase
       .from('tier_list_items')
       .select(`
         *,
-        characters(name, element, rarity, role, image_url)
+        tiers:tiers_id(id, name, color_code),
+        characters(
+          id,
+          name,
+          image_url,
+          tiers:tiers_id(name, color_code),
+          elements:elements_id(name, color),
+          rarities:rarities_id(name, display_text),
+          roles:roles_id(name),
+          weapons:weapons_id(name, damage)
+        )
       `)
       .eq('tier_list_id', id)
-      .order('tier');
+      .order('created_at');
     
     if (itemsError) throw itemsError;
     
     // Flatten character data
     const flatItems = items.map(item => ({
-      ...item,
+      id: item.id,
+      tier_list_id: item.tier_list_id,
+      character_id: item.character_id,
+      tiers_id: item.tiers_id?.id,
+      tier_name: item.tiers?.name,
+      tier_color: item.tiers?.color_code,
       name: item.characters?.name,
-      element: item.characters?.element,
-      rarity: item.characters?.rarity,
-      role: item.characters?.role,
+      element_name: item.characters?.elements?.name,
+      rarity_name: item.characters?.rarities?.name,
+      role_name: item.characters?.roles?.name,
+      weapon_name: item.characters?.weapons?.name,
       image_url: item.characters?.image_url,
-      characters: undefined
+      created_at: item.created_at,
+      updated_at: item.updated_at
     }));
     
     res.json({ ...tierList, items: flatItems });
@@ -94,7 +111,7 @@ export async function createTierList(req, res) {
       const itemsToInsert = items.map(item => ({
         tier_list_id: tierList.id,
         character_id: item.character_id,
-        tier: item.tier
+        tiers_id: item.tiers_id
       }));
       
       const { error: itemsError } = await supabase
@@ -139,7 +156,7 @@ export async function updateTierList(req, res) {
       const itemsToInsert = items.map(item => ({
         tier_list_id: id,
         character_id: item.character_id,
-        tier: item.tier
+        tiers_id: item.tiers_id
       }));
       
       const { error: insertError } = await supabase

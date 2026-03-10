@@ -7,22 +7,24 @@ export async function getAllCharacters(req, res) {
       .from('characters')
       .select(`
         *,
-        tiers(name, color_code),
-        roles(name),
-        elements(name),
-        weapons(name)
+        tiers:tiers_id(name, color_code),
+        roles:roles_id(name),
+        elements:elements_id(name, color),
+        weapons:weapons_id(name, damage),
+        rarities:rarities_id(name, display_text)
       `)
       .order('name');
     
     if (error) throw error;
     
-    // Flatten the response to include tier name directly
+    // Flatten the response to include related names directly
     const flattened = data.map(char => ({
       ...char,
-      tier: char.tiers?.name || 'Unknown',
-      role: char.roles?.name || char.role || 'Unknown',
-      element: char.elements?.name || char.element || 'Unknown',
-      weapon: char.weapons?.name || char.weapon || 'Unknown'
+      tier_name: char.tiers?.name || 'Unknown',
+      role_name: char.roles?.name || 'Unknown',
+      element_name: char.elements?.name || 'Unknown',
+      weapon_name: char.weapons?.name || 'Unknown',
+      rarity_name: char.rarities?.name || 'Unknown'
     }));
     
     res.json(flattened);
@@ -40,10 +42,11 @@ export async function getCharacterById(req, res) {
       .from('characters')
       .select(`
         *,
-        tiers(name, color_code),
-        roles(name),
-        elements(name),
-        weapons(name)
+        tiers:tiers_id(name, color_code),
+        roles:roles_id(name),
+        elements:elements_id(name, color),
+        weapons:weapons_id(name, damage),
+        rarities:rarities_id(name, display_text)
       `)
       .eq('id', id)
       .single();
@@ -58,10 +61,11 @@ export async function getCharacterById(req, res) {
     // Flatten the response
     const flattened = {
       ...data,
-      tier: data.tiers?.name || 'Unknown',
-      role: data.roles?.name || data.role || 'Unknown',
-      element: data.elements?.name || data.element || 'Unknown',
-      weapon: data.weapons?.name || data.weapon || 'Unknown'
+      tier_name: data.tiers?.name || 'Unknown',
+      role_name: data.roles?.name || 'Unknown',
+      element_name: data.elements?.name || 'Unknown',
+      weapon_name: data.weapons?.name || 'Unknown',
+      rarity_name: data.rarities?.name || 'Unknown'
     };
     
     res.json(flattened);
@@ -73,22 +77,32 @@ export async function getCharacterById(req, res) {
 // Add new character
 export async function addCharacter(req, res) {
   try {
-    const { name, element, rarity, role, weapon, tier, skill, ultimate, image_url } = req.body;
+    const { name, elements_id, rarities_id, roles_id, weapons_id, tiers_id, character_skills_id, image_url } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
     
     const { data, error } = await supabase
       .from('characters')
       .insert([{
         name,
-        element,
-        rarity,
-        role,
-        weapon,
-        tier: tier || 'T3',
-        skill,
-        ultimate,
+        elements_id,
+        rarities_id,
+        roles_id,
+        weapons_id,
+        tiers_id,
+        character_skills_id,
         image_url
       }])
-      .select()
+      .select(`
+        *,
+        tiers:tiers_id(name, color_code),
+        roles:roles_id(name),
+        elements:elements_id(name, color),
+        weapons:weapons_id(name, damage),
+        rarities:rarities_id(name, display_text)
+      `)
       .single();
     
     if (error) throw error;
@@ -107,23 +121,30 @@ export async function addCharacter(req, res) {
 export async function updateCharacter(req, res) {
   try {
     const { id } = req.params;
-    const { name, element, rarity, role, weapon, tier, skill, ultimate, image_url } = req.body;
+    const { name, elements_id, rarities_id, roles_id, weapons_id, tiers_id, character_skills_id, image_url } = req.body;
+    
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (elements_id !== undefined) updateData.elements_id = elements_id;
+    if (rarities_id !== undefined) updateData.rarities_id = rarities_id;
+    if (roles_id !== undefined) updateData.roles_id = roles_id;
+    if (weapons_id !== undefined) updateData.weapons_id = weapons_id;
+    if (tiers_id !== undefined) updateData.tiers_id = tiers_id;
+    if (character_skills_id !== undefined) updateData.character_skills_id = character_skills_id;
+    if (image_url !== undefined) updateData.image_url = image_url;
     
     const { data, error } = await supabase
       .from('characters')
-      .update({
-        name,
-        element,
-        rarity,
-        role,
-        weapon,
-        tier,
-        skill,
-        ultimate,
-        image_url
-      })
+      .update(updateData)
       .eq('id', id)
-      .select()
+      .select(`
+        *,
+        tiers:tiers_id(name, color_code),
+        roles:roles_id(name),
+        elements:elements_id(name, color),
+        weapons:weapons_id(name, damage),
+        rarities:rarities_id(name, display_text)
+      `)
       .single();
     
     if (error) throw error;

@@ -63,6 +63,32 @@ export async function login(req, res) {
     
     if (profileError) {
       console.error('Profile error:', profileError);
+      // Jika profile tidak ada, coba buat sebagai user baru
+      if (profileError.code === 'PGRST116') {
+        const { data: newProfile } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: data.user.id,
+            username: data.user.user_metadata?.username,
+            role: 'user'
+          })
+          .select('*')
+          .single();
+        
+        return res.json({
+          message: 'Login berhasil',
+          user: {
+            id: data.user.id,
+            email: data.user.email,
+            username: newProfile?.username || data.user.user_metadata?.username,
+            role: newProfile?.role || 'user'
+          },
+          session: {
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token
+          }
+        });
+      }
     }
     
     res.json({
@@ -111,13 +137,36 @@ export async function checkAdmin(req, res) {
     
     if (profileError) {
       console.error('Profile error:', profileError);
+      // Jika profile tidak ada, coba buat
+      if (profileError.code === 'PGRST116') {
+        const { data: newProfile, error: insertError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: user.id,
+            username: user.user_metadata?.username || user.email?.split('@')[0],
+            role: 'user'
+          })
+          .select('role')
+          .single();
+        
+        if (insertError) {
+          console.error('Error creating user profile:', insertError);
+          return res.status(500).json({ error: 'Gagal mengambil data user' });
+        }
+        
+        return res.json({
+          isAdmin: newProfile?.role === 'admin',
+          role: newProfile?.role || 'user',
+          username: user.user_metadata?.username
+        });
+      }
       return res.status(500).json({ error: 'Gagal mengambil data user' });
     }
     
     res.json({
-      isAdmin: profile.role === 'admin',
-      role: profile.role,
-      username: profile.username
+      isAdmin: profile?.role === 'admin',
+      role: profile?.role || 'user',
+      username: profile?.username
     });
   } catch (error) {
     console.error('Check admin error:', error);

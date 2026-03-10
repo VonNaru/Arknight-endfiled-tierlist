@@ -41,22 +41,36 @@ CREATE POLICY "Anyone can read characters"
     TO authenticated, anon
     USING (true);
 
--- Policy: Hanya authenticated users bisa insert/update/delete
--- (Nanti kita akan tambah role checking untuk admin)
-CREATE POLICY "Authenticated users can insert characters"
+-- Policy: Hanya admin yang bisa insert/update/delete
+CREATE POLICY "Only admins can insert characters"
     ON characters FOR INSERT
     TO authenticated
-    WITH CHECK (true);
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM user_profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
 
-CREATE POLICY "Authenticated users can update characters"
+CREATE POLICY "Only admins can update characters"
     ON characters FOR UPDATE
     TO authenticated
-    USING (true);
+    USING (
+        EXISTS (
+            SELECT 1 FROM user_profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
 
-CREATE POLICY "Authenticated users can delete characters"
+CREATE POLICY "Only admins can delete characters"
     ON characters FOR DELETE
     TO authenticated
-    USING (true);
+    USING (
+        EXISTS (
+            SELECT 1 FROM user_profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
 
 -- ============================================
 -- TIER LISTS TABLE
@@ -228,6 +242,11 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policy: System dapat membuat profile saat user signup
+CREATE POLICY "System can insert user profiles"
+    ON user_profiles FOR INSERT
+    WITH CHECK (true);
 
 -- Policy: Users can read their own profile
 CREATE POLICY "Users can read own profile"

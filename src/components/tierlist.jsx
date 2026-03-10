@@ -97,10 +97,10 @@ export default function TierList() {
     })
 
     characters.forEach(char => {
-      // Gunakan tier dari database (prioritas utama)
+      // Gunakan tier_name dari database (prioritas utama)
       // Jika tidak ada, gunakan 'D' sebagai default
-      const tier = char.tier || 'D'
-      const role = char.role || 'Guard'
+      const tier = char.tier_name || 'D'
+      const role = char.role_name || 'Guard'
       
       if (tierData[tier] && tierData[tier][role]) {
         tierData[tier][role].push(char)

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '../api/api';
-import AdminTierPanel from './AdminTierPanel';
 
 const styles = {
   overlay: {
@@ -147,10 +146,10 @@ const styles = {
 export default function AdminPanel({ onClose, onCharacterAdded, user }) {
   const [error, setError] = useState('');
   const [characters, setCharacters] = useState([]);
+  const [tiers, setTiers] = useState([]);    // Store available tiers from database
   const [editingCharacter, setEditingCharacter] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [currentTab, setCurrentTab] = useState('characters'); // 'characters' or 'tiers'
   
   // Check if user is admin
   const isAdmin = user && user.role === 'admin';
@@ -169,19 +168,34 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
   // Form state untuk karakter baru
   const [characterForm, setCharacterForm] = useState({
     name: '',
-    element: '',
     rarity: 5,
     role: 'Attacker',
-    tier: 'T0',
+    tiers_id: '',   // Changed from TEXT 'tier' to UUID FK
     image_url: ''
   });
 
-  // Load characters when panel opens
+  // Load characters and tiers when panel opens
   useEffect(() => {
     if (isAdmin) {
       loadCharacters();
+      loadTiers();
     }
   }, [isAdmin]);
+
+  // Load available tiers from database
+  const loadTiers = async () => {
+    try {
+      const response = await fetch(`${API_URL}/tiers`);
+      const data = await response.json();
+      // Sort by display_order if available, else by name
+      const sortedTiers = Array.isArray(data) ? data.sort((a, b) => {
+        return (a.display_order || 999) - (b.display_order || 999);
+      }) : [];
+      setTiers(sortedTiers);
+    } catch (err) {
+      console.error('Error loading tiers:', err);
+    }
+  };
 
   const loadCharacters = async () => {
     setLoading(true);
@@ -200,10 +214,9 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     setEditingCharacter(character);
     setCharacterForm({
       name: character.name,
-      element: character.element || '',
       rarity: character.rarity,
       role: character.role,
-      tier: character.tier,
+      tiers_id: character.tiers_id || '',   // Use tiers_id FK instead of tier TEXT
       image_url: character.image_url || ''
     });
   };
@@ -213,10 +226,9 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     setError('');
     setCharacterForm({
       name: '',
-      element: '',
       rarity: 5,
       role: 'Attacker',
-      tier: 'T0',
+      tiers_id: '',   // Reset to empty UUID instead of 'S'
       image_url: ''
     });
   };
@@ -270,12 +282,12 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
       setError('Nama karakter wajib diisi');
       return;
     }
-    if (!characterForm.element || !characterForm.element.trim()) {
-      setError('Element wajib dipilih');
-      return;
-    }
     if (!characterForm.role || !characterForm.role.trim()) {
       setError('Role wajib dipilih');
+      return;
+    }
+    if (!characterForm.tiers_id) {
+      setError('Tier wajib dipilih');
       return;
     }
     
@@ -327,12 +339,12 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
       setError('Nama karakter wajib diisi');
       return;
     }
-    if (!characterForm.element || !characterForm.element.trim()) {
-      setError('Element wajib dipilih');
-      return;
-    }
     if (!characterForm.role || !characterForm.role.trim()) {
       setError('Role wajib dipilih');
+      return;
+    }
+    if (!characterForm.tiers_id) {
+      setError('Tier wajib dipilih');
       return;
     }
     if (characterForm.image_url && !isValidUrl(characterForm.image_url)) {
@@ -358,10 +370,9 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
         alert('Karakter berhasil ditambahkan!');
         setCharacterForm({
           name: '',
-          element: '',
           rarity: 5,
           role: 'Attacker',
-          tier: 'T0',
+          tiers_id: '',
           image_url: ''
         });
         
@@ -394,30 +405,7 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
           x
         </button>
         
-        <h2 style={styles.h2}>Admin Panel</h2>
-        
-        {isAdmin && (
-          <div style={styles.tabs}>
-            <button
-              onClick={() => setCurrentTab('characters')}
-              style={{
-                ...styles.tabButton,
-                ...(currentTab === 'characters' ? styles.tabButtonActive : {})
-              }}
-            >
-              👥 Characters
-            </button>
-            <button
-              onClick={() => setCurrentTab('tiers')}
-              style={{
-                ...styles.tabButton,
-                ...(currentTab === 'tiers' ? styles.tabButtonActive : {})
-              }}
-            >
-              🎯 Tiers
-            </button>
-          </div>
-        )}
+        <h2 style={styles.h2}>Admin Panel</h2>  
         
         {!user ? (
           <div style={styles.errorMessage}>
@@ -429,7 +417,7 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
             <br /><br />
             <small>Login sebagai: <strong>{user.username}</strong> ({user.role})</small>
           </div>
-        ) : currentTab === 'characters' ? (
+        ) : (
           <div>
             <h3 style={styles.h3}>{editingCharacter ? 'Edit Karakter' : 'Tambah Karakter Baru'}</h3>
             <div style={{ color: '#aaa', marginBottom: '15px', fontSize: '14px' }}>
@@ -465,7 +453,7 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
                       borderRadius: '5px'
                     }}>
                       <div style={{ color: '#fff' }}>
-                        <strong>{char.name}</strong> - {char.tier} ({char.role})
+                        <strong>{char.name}</strong> - {char.tier_name} ({char.role_name || char.role})
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
@@ -543,19 +531,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
               </div>
               
               <div style={styles.formGroup}>
-                <label style={styles.label}>Element:</label>
-                <input
-                  type="text"
-                  value={characterForm.element}
-                  onChange={(e) => setCharacterForm({...characterForm, element: e.target.value})}
-                  placeholder="Contoh: Ice (opsional)"
-                  style={styles.input}
-                  onFocus={(e) => e.target.style.borderColor = '#4a90e2'}
-                  onBlur={(e) => e.target.style.borderColor = '#333'}
-                />
-              </div>
-              
-              <div style={styles.formGroup}>
                 <label style={styles.label}>Rarity:</label>
                 <select
                   value={characterForm.rarity}
@@ -588,18 +563,18 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
               <div style={styles.formGroup}>
                 <label style={styles.label}>Tier:</label>
                 <select
-                  value={characterForm.tier}
-                  onChange={(e) => setCharacterForm({...characterForm, tier: e.target.value})}
+                  value={characterForm.tiers_id}
+                  onChange={(e) => setCharacterForm({...characterForm, tiers_id: e.target.value})}
                   style={styles.select}
                   onFocus={(e) => e.target.style.borderColor = '#4a90e2'}
                   onBlur={(e) => e.target.style.borderColor = '#333'}
                 >
-                  <option value="T0">T0</option>
-                  <option value="T0.5">T0.5</option>
-                  <option value="T1">T1</option>
-                  <option value="T1.5">T1.5</option>
-                  <option value="T2">T2</option>
-                  <option value="T3">T3</option>
+                  <option value="">-- Select Tier --</option>
+                  {tiers && tiers.map(tier => (
+                    <option key={tier.id} value={tier.id}>
+                      {tier.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               
@@ -645,10 +620,10 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
               </button>
             </form>
           </div>
-        ) : (
-          <AdminTierPanel />
         )}
       </div>
     </div>
   );
 }
+
+

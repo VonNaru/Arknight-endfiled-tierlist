@@ -15,18 +15,19 @@ export async function getUserFavorites(req, res) {
         id,
         user_id,
         character_id,
-        custom_tier,
+        tiers_id,
         notes,
         created_at,
+        tiers:tiers_id(id, name, color_code),
         characters (
+          id,
           name,
-          element,
-          rarity,
-          role,
-          tier,
-          skill,
-          ultimate,
-          image_url
+          image_url,
+          tiers:tiers_id(name, color_code),
+          elements:elements_id(name, color),
+          rarities:rarities_id(name, display_text),
+          roles:roles_id(name),
+          weapons:weapons_id(name, damage)
         )
       `)
       .eq('user_id', userId)
@@ -39,16 +40,16 @@ export async function getUserFavorites(req, res) {
       id: fav.id,
       user_id: fav.user_id,
       character_id: fav.character_id,
-      custom_tier: fav.custom_tier,
+      tiers_id: fav.tiers_id,
+      tier_name: fav.tiers?.name,
+      tier_color: fav.tiers?.color_code,
       notes: fav.notes,
       created_at: fav.created_at,
       name: fav.characters.name,
-      element: fav.characters.element,
-      rarity: fav.characters.rarity,
-      role: fav.characters.role,
-      original_tier: fav.characters.tier,
-      skill: fav.characters.skill,
-      ultimate: fav.characters.ultimate,
+      element_name: fav.characters.elements?.name,
+      rarity_name: fav.characters.rarities?.name,
+      role_name: fav.characters.roles?.name,
+      weapon_name: fav.characters.weapons?.name,
       image_url: fav.characters.image_url
     }));
 
@@ -62,11 +63,11 @@ export async function getUserFavorites(req, res) {
 // Add character to favorites
 export async function addFavorite(req, res) {
   try {
-    const { userId, characterId, customTier, notes } = req.body;
+    const { userId, characterId, tiersId, notes } = req.body;
 
-    if (!userId || !characterId || !customTier) {
+    if (!userId || !characterId || !tiersId) {
       return res.status(400).json({ 
-        error: 'User ID, Character ID, and Custom Tier are required' 
+        error: 'User ID, Character ID, and Tier ID are required' 
       });
     }
 
@@ -76,7 +77,7 @@ export async function addFavorite(req, res) {
       .insert([{
         user_id: userId,
         character_id: characterId,
-        custom_tier: customTier,
+        tiers_id: tiersId,
         notes: notes || null
       }])
       .select()
@@ -103,16 +104,16 @@ export async function addFavorite(req, res) {
 export async function updateFavorite(req, res) {
   try {
     const { id } = req.params;
-    const { customTier, notes } = req.body;
+    const { tiersId, notes } = req.body;
 
-    if (!customTier) {
-      return res.status(400).json({ error: 'Custom tier is required' });
+    if (!tiersId) {
+      return res.status(400).json({ error: 'Tier ID is required' });
     }
 
     const { data, error } = await supabase
       .from('favorites')
       .update({
-        custom_tier: customTier,
+        tiers_id: tiersId,
         notes: notes || null
       })
       .eq('id', id)

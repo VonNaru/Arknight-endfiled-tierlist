@@ -25,7 +25,29 @@ export async function isAdmin(req, res, next) {
       .eq('id', user.id)
       .single();
     
-    if (profileError || !profile || profile.role !== 'admin') {
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      // Jika profile tidak ada (status 406), kemungkinan user baru atau data corrupt
+      if (profileError.code === 'PGRST116') {
+        // Coba buat profile baru
+        const { error: insertError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: user.id,
+            username: user.user_metadata?.username || user.email?.split('@')[0],
+            role: 'user'
+          });
+        
+        if (insertError) {
+          console.error('Error creating user profile:', insertError);
+          return res.status(403).json({ error: 'Akses ditolak. Profil user tidak dapat dibuat.' });
+        }
+      } else {
+        return res.status(403).json({ error: 'Akses ditolak. Hanya admin yang dapat melakukan aksi ini.' });
+      }
+    }
+    
+    if (!profile || profile.role !== 'admin') {
       return res.status(403).json({ error: 'Akses ditolak. Hanya admin yang dapat melakukan aksi ini.' });
     }
     
@@ -66,12 +88,32 @@ export async function authenticate(req, res, next) {
       .eq('id', user.id)
       .single();
     
-    req.user = {
-      id: user.id,
-      email: user.email,
-      username: profile?.username || user.user_metadata?.username,
-      role: profile?.role || 'user'
-    };
+    // Jika profile tidak ada, coba buat
+    if (!profile) {
+      const { data: newProfile } = await supabase
+        .from('user_profiles')
+        .insert({
+          id: user.id,
+          username: user.user_metadata?.username || user.email?.split('@')[0],
+          role: 'user'
+        })
+        .select('*')
+        .single();
+      
+      req.user = {
+        id: user.id,
+        email: user.email,
+        username: newProfile?.username || user.user_metadata?.username,
+        role: newProfile?.role || 'user'
+      };
+    } else {
+      req.user = {
+        id: user.id,
+        email: user.email,
+        username: profile?.username || user.user_metadata?.username,
+        role: profile?.role || 'user'
+      };
+    }
     next();
   } catch (error) {
     res.status(500).json({ error: error.message });

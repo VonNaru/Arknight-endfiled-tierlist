@@ -169,7 +169,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
   const [characterForm, setCharacterForm] = useState({
     name: '',
     rarity: 5,
-    role: 'Attacker',
     tiers_id: '',   // Changed from TEXT 'tier' to UUID FK
     image_url: ''
   });
@@ -215,7 +214,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     setCharacterForm({
       name: character.name,
       rarity: character.rarity,
-      role: character.role,
       tiers_id: character.tiers_id || '',   // Use tiers_id FK instead of tier TEXT
       image_url: character.image_url || ''
     });
@@ -227,7 +225,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     setCharacterForm({
       name: '',
       rarity: 5,
-      role: 'Attacker',
       tiers_id: '',   // Reset to empty UUID instead of 'S'
       image_url: ''
     });
@@ -280,10 +277,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
     // Validation
     if (!characterForm.name || !characterForm.name.trim()) {
       setError('Nama karakter wajib diisi');
-      return;
-    }
-    if (!characterForm.role || !characterForm.role.trim()) {
-      setError('Role wajib dipilih');
       return;
     }
     if (!characterForm.tiers_id) {
@@ -339,10 +332,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
       setError('Nama karakter wajib diisi');
       return;
     }
-    if (!characterForm.role || !characterForm.role.trim()) {
-      setError('Role wajib dipilih');
-      return;
-    }
     if (!characterForm.tiers_id) {
       setError('Tier wajib dipilih');
       return;
@@ -371,7 +360,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
         setCharacterForm({
           name: '',
           rarity: 5,
-          role: 'Attacker',
           tiers_id: '',
           image_url: ''
         });
@@ -453,7 +441,7 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
                       borderRadius: '5px'
                     }}>
                       <div style={{ color: '#fff' }}>
-                        <strong>{char.name}</strong> - {char.tier_name} ({char.role_name || char.role})
+                        <strong>{char.name}</strong> - {char.tier_name}
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
@@ -545,20 +533,6 @@ export default function AdminPanel({ onClose, onCharacterAdded, user }) {
                 </select>
               </div>
               
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Role:</label>
-                <select
-                  value={characterForm.role}
-                  onChange={(e) => setCharacterForm({...characterForm, role: e.target.value})}
-                  style={styles.select}
-                  onFocus={(e) => e.target.style.borderColor = '#4a90e2'}
-                  onBlur={(e) => e.target.style.borderColor = '#333'}
-                >
-                  <option value="Attacker">Attacker</option>
-                  <option value="Stun">Stun</option>
-                  <option value="Support">Support</option>
-                </select>
-              </div>
               
               <div style={styles.formGroup}>
                 <label style={styles.label}>Tier:</label>

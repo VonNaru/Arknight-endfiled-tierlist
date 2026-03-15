@@ -13,6 +13,9 @@ function Navbar({ onNavigate }) {
       <button style={buttonStyle} onClick={() => onNavigate('favorites')}>
         ⭐ Favorites
       </button>
+      <button style={buttonStyle} onClick={() => onNavigate('weapons')}>
+        ⚔️ Weapons
+      </button>
     </nav>
   )
 }

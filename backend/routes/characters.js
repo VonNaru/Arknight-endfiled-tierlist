@@ -14,9 +14,9 @@ const router = express.Router();
 
 // Public routes (dapat diakses siapa saja)
 router.get('/', getAllCharacters);
+router.get('/skills/:characterId', getCharacterSkills);
 router.get('/:id', getCharacterById);
 router.get('/:id/ratings', getCharacterRatings);
-router.get('/skills/:characterId', getCharacterSkills);
 router.post('/:id/ratings', addRating);
 
 // Admin only routes (hanya admin yang bisa mengakses)

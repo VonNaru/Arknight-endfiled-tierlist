@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Home from './components/Home'
 import TierList from './components/tierlist'
 import Favorites from './components/Favorites'
+import Weapons from './components/Weapons'
 import Background from './components/background'
 import AdminPanel from './components/AdminPanel'
 import LoginModal from './components/LoginModal'
@@ -91,6 +92,7 @@ function App() {
           {currentPage === 'home' && <Home onCharacterClick={setSelectedCharacterId} />}
           {currentPage === 'about' && <TierList key={refreshTrigger} />}
           {currentPage === 'favorites' && <Favorites key={refreshTrigger} user={user} />}
+          {currentPage === 'weapons' && <Weapons key={refreshTrigger} />}
         </div>
       )}
 

@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/roboto": "^5.2.10",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },

@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { characterAPI } from '../api/api';
 
+// Import Google Fonts Roboto
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
 const styles = {
   container: {
     display: 'flex',
@@ -124,7 +129,8 @@ const styles = {
     marginBottom: '10px',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px'
+    gap: '8px',
+    fontFamily: 'Roboto, sans-serif'
   },
   description: {
     color: '#ccc',
@@ -132,7 +138,8 @@ const styles = {
     lineHeight: '1.6',
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
     padding: '15px',
-    borderRadius: '10px'
+    borderRadius: '10px',
+    fontFamily: 'Roboto, sans-serif'
   },
   loading: {
     textAlign: 'center',

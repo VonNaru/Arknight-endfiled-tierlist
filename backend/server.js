@@ -8,6 +8,7 @@ import tierListRoutes from './routes/tierLists.js';
 import tiersRoutes from './routes/tiers.js';
 import authRoutes from './routes/auth.js';
 import favoritesRoutes from './routes/favorites.js';
+import weaponsRoutes from './routes/weapons.js';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use('/api/characters', characterRoutes);
 app.use('/api/tiers', tiersRoutes);
 app.use('/api/tierlists', tierListRoutes);
 app.use('/api/favorites', favoritesRoutes);
+app.use('/api/weapons', weaponsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -76,9 +76,27 @@ export const characterAPI = {
 
   // Get character skills
   getSkills: async (characterId) => {
-    const response = await fetch(`${API_URL}/characters/skills/${characterId}`);
-    if (!response.ok) throw new Error('Failed to fetch character skills');
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/characters/skills/${characterId}`);
+      const data = await response.json();
+      
+      // Log semua field yang diterima
+      console.log(`=== Skills API Response for ${characterId} ===`);
+      console.log('Status:', response.status);
+      console.log('Full Response:', data);
+      if (data) {
+        console.log('Available fields:', Object.keys(data));
+      }
+      console.log('================================');
+      
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to fetch character skills');
+      }
+      return data;
+    } catch (error) {
+      console.error('Error in getSkills:', error);
+      throw error;
+    }
   },
 };
 

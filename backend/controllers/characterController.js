@@ -229,6 +229,20 @@ export async function addRating(req, res) {
 export async function getCharacterSkills(req, res) {
   try {
     const { characterId } = req.params;
+    console.log(`\n=== Fetching skills for character: ${characterId} ===`);
+    
+    // First verify character exists
+    const { data: charCheck, error: charError } = await supabase
+      .from('characters')
+      .select('id, name')
+      .eq('id', characterId)
+      .single();
+    
+    if (charError) {
+      console.error('Character not found:', charError);
+      return res.status(404).json({ error: 'Character not found' });
+    }
+    console.log(`✓ Character found: ${charCheck.name}`);
     
     const { data, error } = await supabase
       .from('character_skills')
@@ -236,23 +250,23 @@ export async function getCharacterSkills(req, res) {
       .eq('character_id', characterId)
       .single();
     
+    console.log('Query error:', error);
+    console.log('Query result data:', data ? 'Found' : 'Not found');
+    
     if (error) {
       if (error.code === 'PGRST116') {
         // No skills found, return empty object
+        console.log('No skills found for this character, returning empty object');
         return res.json({
           character_id: characterId,
           basic_attack_name: null,
           basic_attack_description: null,
-          basic_attack_rank: 1,
           normal_skill_name: null,
           normal_skill_description: null,
-          normal_skill_rank: 1,
           combo_skill_name: null,
           combo_skill_description: null,
-          combo_skill_rank: 1,
           ultimate_name: null,
           ultimate_description: null,
-          ultimate_rank: 1,
           potential_1_name: null,
           potential_1_description: null,
           potential_2_name: null,
@@ -269,11 +283,16 @@ export async function getCharacterSkills(req, res) {
           talent_2_description: null
         });
       }
+      console.error('Database error:', error.message);
       throw error;
     }
     
+    console.log(`✓ Skills found with fields:`, Object.keys(data).filter(k => data[k]).length, 'fields populated');
+    console.log('Basic attack name:', data.basic_attack_name);
+    console.log('Normal skill name:', data.normal_skill_name);
     res.json(data);
   } catch (error) {
+    console.error('Error fetching character skills:', error.message);
     res.status(500).json({ error: error.message });
   }
 }

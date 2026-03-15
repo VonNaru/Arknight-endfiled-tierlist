@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { characterAPI } from '../api/api';
 
+// Import Google Fonts Roboto
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
 // Add pulse animation
 const pulseAnimation = `
   @keyframes pulse {
@@ -149,7 +154,8 @@ const styles = {
     alignItems: 'center',
     gap: '10px',
     borderBottom: '2px solid rgba(102, 126, 234, 0.3)',
-    paddingBottom: '10px'
+    paddingBottom: '10px',
+    fontFamily: 'Roboto, sans-serif'
   },
   description: {
     color: '#ccc',
@@ -158,7 +164,8 @@ const styles = {
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     padding: '14px',
     borderRadius: '10px',
-    border: '1px solid rgba(102, 126, 234, 0.2)'
+    border: '1px solid rgba(102, 126, 234, 0.2)',
+    fontFamily: 'Roboto, sans-serif'
   },
   skillsContainer: {
     display: 'grid',
@@ -176,17 +183,20 @@ const styles = {
     color: '#667eea',
     fontSize: '12px',
     fontWeight: 'bold',
-    marginBottom: '6px'
+    marginBottom: '6px',
+    fontFamily: 'Roboto, sans-serif'
   },
   skillRank: {
     color: '#aaa',
     fontSize: '11px',
-    marginBottom: '6px'
+    marginBottom: '6px',
+    fontFamily: 'Roboto, sans-serif'
   },
   skillDescription: {
     color: '#ccc',
     fontSize: '12px',
-    lineHeight: '1.4'
+    lineHeight: '1.4',
+    fontFamily: 'Roboto, sans-serif'
   },
   potentialCard: {
     backgroundColor: 'rgba(255, 193, 7, 0.08)',
@@ -199,7 +209,8 @@ const styles = {
     color: '#ffc107',
     fontSize: '12px',
     fontWeight: 'bold',
-    marginBottom: '5px'
+    marginBottom: '5px',
+    fontFamily: 'Roboto, sans-serif'
   },
   talentCard: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -212,7 +223,8 @@ const styles = {
     color: '#4caf50',
     fontSize: '12px',
     fontWeight: 'bold',
-    marginBottom: '5px'
+    marginBottom: '5px',
+    fontFamily: 'Roboto, sans-serif'
   },
   imageSkeleton: {
     width: '100%',
@@ -278,14 +290,48 @@ export default function CharacterDetailPage({ characterId, onClose }) {
     try {
       setLoading(true);
       const data = await characterAPI.getById(characterId);
+      console.log('Character data:', data);
       setCharacter(data);
       
       // Fetch character skills
       try {
+        console.log(`Fetching skills for character ID: ${characterId}`);
         const skillsData = await characterAPI.getSkills(characterId);
+        console.log('===== Skills Data Received =====');
+        console.log('Full object:', skillsData);
+        console.log('Fields:', skillsData ? Object.keys(skillsData) : 'No data');
+        console.log('basic_attack_name:', skillsData?.basic_attack_name);
+        console.log('normal_skill_name:', skillsData?.normal_skill_name);
+        console.log('==============================');
         setSkills(skillsData);
       } catch (skillsErr) {
-        console.error('Error fetching skills:', skillsErr);
+        console.error('Error fetching skills:', skillsErr.message);
+        // Set empty skills object as fallback
+        setSkills({
+          character_id: characterId,
+          basic_attack_name: null,
+          basic_attack_description: null,
+          normal_skill_name: null,
+          normal_skill_description: null,
+          combo_skill_name: null,
+          combo_skill_description: null,
+          ultimate_name: null,
+          ultimate_description: null,
+          potential_1_name: null,
+          potential_1_description: null,
+          potential_2_name: null,
+          potential_2_description: null,
+          potential_3_name: null,
+          potential_3_description: null,
+          potential_4_name: null,
+          potential_4_description: null,
+          potential_5_name: null,
+          potential_5_description: null,
+          talent_1_name: null,
+          talent_1_description: null,
+          talent_2_name: null,
+          talent_2_description: null
+        });
       }
       
       setError(null);
@@ -466,23 +512,19 @@ export default function CharacterDetailPage({ characterId, onClose }) {
             </h3>
             <div style={styles.skillsContainer}>
               <div style={styles.skillCard}>
-                <div style={styles.skillName}>Basic Attack</div>
-                <div style={styles.skillRank}>Rank {skills.basic_attack_rank || 1}</div>
+                <div style={styles.skillName}>{skills.basic_attack_name || 'Basic Attack'}</div>
                 <div style={styles.skillDescription}>{skills.basic_attack_description || 'Loading...'}</div>
               </div>
               <div style={styles.skillCard}>
-                <div style={styles.skillName}>Normal Skill</div>
-                <div style={styles.skillRank}>Rank {skills.normal_skill_rank || 1}</div>
+                <div style={styles.skillName}>{skills.normal_skill_name || 'Normal Skill'}</div>
                 <div style={styles.skillDescription}>{skills.normal_skill_description || 'Loading...'}</div>
               </div>
               <div style={styles.skillCard}>
-                <div style={styles.skillName}>Combo Skill</div>
-                <div style={styles.skillRank}>Rank {skills.combo_skill_rank || 1}</div>
+                <div style={styles.skillName}>{skills.combo_skill_name || 'Combo Skill'}</div>
                 <div style={styles.skillDescription}>{skills.combo_skill_description || 'Loading...'}</div>
               </div>
               <div style={styles.skillCard}>
-                <div style={styles.skillName}>Ultimate</div>
-                <div style={styles.skillRank}>Rank {skills.ultimate_rank || 1}</div>
+                  <div style={styles.skillName}>{skills.ultimate_name || 'Ultimate'}</div>
                 <div style={styles.skillDescription}>{skills.ultimate_description || 'Loading...'}</div>
               </div>
             </div>

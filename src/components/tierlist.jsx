@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { characterAPI } from '../api/api'
 
 // Tier configurations
@@ -13,8 +13,8 @@ const TIER_COLORS = {
   'D': '#A8DADC'     // Blue
 }
 
-// Character Card Component
-function CharacterCard({ character, tierColor }) {
+// Character Card Component (Memoized)
+const CharacterCard = memo(function CharacterCard({ character, tierColor }) {
   return (
     <div style={{
       display: 'flex',
@@ -53,7 +53,7 @@ function CharacterCard({ character, tierColor }) {
       </div>
     </div>
   )
-}
+})
 
 // Main Component
 export default function TierList() {
@@ -63,13 +63,6 @@ export default function TierList() {
 
   useEffect(() => {
     loadCharacters()
-    
-    // Auto refresh setiap 3 detik untuk melihat perubahan
-    const interval = setInterval(() => {
-      loadCharacters()
-    }, 3000)
-    
-    return () => clearInterval(interval)
   }, [])
 
   const loadCharacters = async () => {
@@ -86,7 +79,8 @@ export default function TierList() {
     }
   }
 
-  const getTierData = () => {
+  // Memoize tier data calculation
+  const getTierData = useMemo(() => {
     const tierData = {}
 
     TIERS.forEach(tier => {
@@ -111,7 +105,7 @@ export default function TierList() {
     })
 
     return tierData
-  }
+  }, [characters])
 
   if (loading) {
     return (
@@ -120,8 +114,6 @@ export default function TierList() {
       </div>
     )
   }
-
-  const tierData = getTierData()
 
   return (
     <div style={{ padding: '20px', backgroundColor: '#1a1a1a', minHeight: '100vh' }}>
@@ -230,14 +222,14 @@ export default function TierList() {
               }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {selectedRole 
-                    ? tierData[tier][selectedRole]?.map(char => (
+                    ? getTierData[tier][selectedRole]?.map(char => (
                         <CharacterCard
                           key={char.id}
                           character={char}
                           tierColor={TIER_COLORS[tier]}
                         />
                       ))
-                    : ROLES.flatMap(role => tierData[tier][role]).map(char => (
+                    : ROLES.flatMap(role => getTierData[tier][role]).map(char => (
                         <CharacterCard
                           key={char.id}
                           character={char}

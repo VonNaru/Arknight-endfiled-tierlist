@@ -1,7 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { API_URL } from '../api/api';
 
 const FAVORITES_STORAGE_KEY = 'zzz-favorites';
+
+// Memoized Character Card for better drag-drop performance
+const FavCharacterCard = memo(({ fav, styles, onDragStart, onRemove }) => (
+  <div 
+    className="fav-char-card"
+    style={styles.characterCard}
+    draggable
+    onDragStart={onDragStart}
+    title="Drag to move tier | Click X to remove"
+  >
+    <div style={styles.cardWrapper}>
+      <img src={fav.image_url} alt={fav.name} style={styles.charImage} />
+      <button 
+        className="delete-btn"
+        style={styles.deleteBtn}
+        onClick={onRemove}
+        title="Remove from favorites"
+      >
+        ✕
+      </button>
+    </div>
+    <div style={styles.charName}>{fav.name}</div>
+  </div>
+));
 
 // Add hover style for delete button
 const styleSheet = document.createElement('style');
@@ -226,10 +250,11 @@ export default function Favorites({ user }) {
     return favorites.filter(f => f.custom_tier === tier);
   };
 
-  const getUnassignedCharacters = () => {
+  // Memoize unassigned characters to avoid recalculation
+  const getUnassignedCharacters = useMemo(() => {
     const favoriteCharIds = favorites.map(f => f.character_id);
     return allCharacters.filter(char => !favoriteCharIds.includes(char.id));
-  };
+  }, [favorites, allCharacters]);
 
   const tierColors = {
     'S': '#ff6b6b',
@@ -274,27 +299,13 @@ export default function Favorites({ user }) {
                 <div style={styles.tierLabel}>{tier}</div>
                 <div style={styles.tierContent}>
                   {getCharactersInTier(tier).map(fav => (
-                    <div 
-                      key={fav.id} 
-                      className="fav-char-card"
-                      style={styles.characterCard}
-                      draggable
+                    <FavCharacterCard
+                      key={fav.id}
+                      fav={fav}
+                      styles={styles}
                       onDragStart={() => handleDragStart(fav, true, fav.id)}
-                      title="Drag to move tier | Click X to remove"
-                    >
-                      <div style={styles.cardWrapper}>
-                        <img src={fav.image_url} alt={fav.name} style={styles.charImage} />
-                        <button 
-                          className="delete-btn"
-                          style={styles.deleteBtn}
-                          onClick={() => handleRemoveFavorite(fav.id)}
-                          title="Remove from favorites"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <div style={styles.charName}>{fav.name}</div>
-                    </div>
+                      onRemove={() => handleRemoveFavorite(fav.id)}
+                    />
                   ))}
                 </div>
           </div>
@@ -303,9 +314,9 @@ export default function Favorites({ user }) {
 
       {/* Available Characters */}
       <div style={styles.availableSection}>
-        <h3 style={styles.sectionTitle}>📌 Available Characters (Drag to add)</h3>
+        <h3 style={styles.sectionTitle}>📌 Available Characters ({getUnassignedCharacters.length} Drag to add)</h3>
         <div style={styles.characterGrid}>
-          {getUnassignedCharacters().map(char => (
+          {getUnassignedCharacters.map(char => (
             <div 
               key={char.id} 
               style={styles.availableChar}

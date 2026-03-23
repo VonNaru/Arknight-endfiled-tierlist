@@ -5,6 +5,7 @@ import Home from './components/Home'
 import TierList from './components/tierlist'
 import Favorites from './components/Favorites'
 import Weapons from './components/Weapons'
+import Gear from './components/Gear'
 import Background from './components/background'
 import AdminPanel from './components/AdminPanel'
 import LoginModal from './components/LoginModal'
@@ -93,6 +94,7 @@ function App() {
           {currentPage === 'about' && <TierList key={refreshTrigger} />}
           {currentPage === 'favorites' && <Favorites key={refreshTrigger} user={user} />}
           {currentPage === 'weapons' && <Weapons key={refreshTrigger} />}
+          {currentPage === 'gear' && <Gear key={refreshTrigger} />}
         </div>
       )}
 

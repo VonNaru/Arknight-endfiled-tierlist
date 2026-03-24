@@ -378,67 +378,70 @@ export default function Gear() {
         />
       </div>
 
-      {/* Gear Type Filter */}
+      {/* Combined Filters Section */}
       <div style={styles.filterSection}>
-        <div style={styles.filterTitle}>Gear</div>
-        <div style={styles.gearTypeContainer}>
-          {Object.entries(GEAR_TYPES).map(([key, value]) => (
-            <div
-              key={key}
-              style={{
-                ...styles.gearTypeIcon,
-                ...(selectedGearType.has(key) && styles.gearTypeIconActive)
-              }}
-              onClick={() => toggleGearType(key)}
-              title={value.label}
-            >
-              {value.icon}
-            </div>
-          ))}
+        {/* Gear Type Filter */}
+        <div style={{ marginBottom: '25px' }}>
+          <div style={styles.filterTitle}>Gear</div>
+          <div style={styles.gearTypeContainer}>
+            {Object.entries(GEAR_TYPES).map(([key, value]) => (
+              <div
+                key={key}
+                style={{
+                  ...styles.gearTypeIcon,
+                  ...(selectedGearType.has(key) && styles.gearTypeIconActive)
+                }}
+                onClick={() => toggleGearType(key)}
+                title={value.label}
+              >
+                {value.icon}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Level Filter */}
-      <div style={styles.filterSection}>
-        <div style={styles.filterTitle}>Level</div>
-        <div style={styles.buttonGroup}>
-          {LEVELS.map((level) => (
-            <button
-              key={level}
-              style={{
-                ...styles.filterButton,
-                ...(selectedLevel.has(level) && styles.filterButtonActive)
-              }}
-              onClick={() => toggleLevel(level)}
-            >
-              {level}
-            </button>
-          ))}
+        {/* Level Filter */}
+        <div style={{ marginBottom: '25px' }}>
+          <div style={styles.filterTitle}>Level</div>
+          <div style={styles.buttonGroup}>
+            {LEVELS.map((level) => (
+              <button
+                key={level}
+                style={{
+                  ...styles.filterButton,
+                  ...(selectedLevel.has(level) && styles.filterButtonActive)
+                }}
+                onClick={() => toggleLevel(level)}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Arts DMG Boost Type Filter */}
-      <div style={styles.filterSection}>
-        <div style={styles.filterTitle}>Arts DMG Boost Type</div>
-        <div style={styles.artsDmgContainer}>
-          {ARTS_DMG_TYPES.map((type) => (
-            <button
-              key={type.id}
-              style={{
-                ...styles.artsDmgTag,
-                ...type.style,
-                ...(selectedArtsDmg.has(type.id) &&
-                  (type.id === 'any' && styles.artsDmgTagAnyActive) ||
-                  (type.id === 'stun' && styles.artsDmgTagStunActive) ||
-                  (type.id === 'slow' && styles.artsDmgTagSlowActive) ||
-                  (type.id === 'freeze' && styles.artsDmgTagFreezeActive) ||
-                  (type.id === 'poison' && styles.artsDmgTagPoisonActive))
-              }}
-              onClick={() => toggleArtsDmg(type.id)}
-            >
-              {type.label}
-            </button>
-          ))}
+        {/* Arts DMG Boost Type Filter */}
+        <div>
+          <div style={styles.filterTitle}>Arts DMG Boost Type</div>
+          <div style={styles.artsDmgContainer}>
+            {ARTS_DMG_TYPES.map((type) => (
+              <button
+                key={type.id}
+                style={{
+                  ...styles.artsDmgTag,
+                  ...type.style,
+                  ...(selectedArtsDmg.has(type.id) &&
+                    (type.id === 'any' && styles.artsDmgTagAnyActive) ||
+                    (type.id === 'stun' && styles.artsDmgTagStunActive) ||
+                    (type.id === 'slow' && styles.artsDmgTagSlowActive) ||
+                    (type.id === 'freeze' && styles.artsDmgTagFreezeActive) ||
+                    (type.id === 'poison' && styles.artsDmgTagPoisonActive))
+                }}
+                onClick={() => toggleArtsDmg(type.id)}
+              >
+                {type.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

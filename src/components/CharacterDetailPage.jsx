@@ -53,6 +53,20 @@ const styles = {
     flexDirection: 'column',
     gap: '20px'
   },
+  sidebarStickyWrapper: {
+    position: 'sticky',
+    top: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    alignSelf: 'flex-start',
+    zIndex: 5
+  },
+  stickyImageWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px'
+  },
   imageContainer: {
     position: 'relative',
     width: '100%',
@@ -177,7 +191,8 @@ const styles = {
     padding: '12px',
     borderRadius: '10px',
     border: '1px solid rgba(102, 126, 234, 0.3)',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
+    marginBottom: '10px'
   },
   skillName: {
     color: '#667eea',
@@ -415,13 +430,17 @@ export default function CharacterDetailPage({ characterId, onClose }) {
 
       {/* Left Panel */}
       <div style={styles.leftPanel}>
-        {/* Image */}
-        <div style={styles.imageContainer}>
-          {imageLoading && !imageError && (
-            <div style={styles.imageSkeleton}>
+        {/* Sidebar Sticky Wrapper - Membungkus Image + Stats */}
+        <div style={styles.sidebarStickyWrapper}>
+          {/* Image Wrapper */}
+          <div style={styles.stickyImageWrapper}>
+            {/* Image */}
+            <div style={styles.imageContainer}>
+            {imageLoading && !imageError && (
+              <div style={styles.imageSkeleton}>
               <span>🖼️ Loading image...</span>
             </div>
-          )}
+            )}
           
           {imageError && (
             <div style={styles.imageSkeleton}>
@@ -458,21 +477,22 @@ export default function CharacterDetailPage({ characterId, onClose }) {
           <div style={getTierStyle(character.tier)}>
             {character.tier || 'T3'}
           </div>
-        </div>
-
-        {/* Header */}
-        <div style={styles.header}>
-          <h1 style={styles.name}>{character.name}</h1>
-          <div style={styles.badges}>
-            <span style={getElementStyle(element)}>{element}</span>
-            <span style={{ ...styles.badge, backgroundColor: '#667eea', color: '#fff' }}>
-              {role}
-            </span>
           </div>
-        </div>
 
-        {/* Stats Grid */}
-        <div style={styles.statsGrid}>
+          {/* Header */}
+          <div style={styles.header}>
+            <h1 style={styles.name}>{character.name}</h1>
+            <div style={styles.badges}>
+              <span style={getElementStyle(element)}>{element}</span>
+              <span style={{ ...styles.badge, backgroundColor: '#667eea', color: '#fff' }}>
+                {role}
+              </span>
+            </div>
+          </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div style={styles.statsGrid}>
           <div style={styles.statCard}>
             <div style={styles.statLabel}>Rarity</div>
             <div style={styles.statValue}>{'⭐'.repeat(Number(rarity) || 5)}</div>
@@ -489,6 +509,7 @@ export default function CharacterDetailPage({ characterId, onClose }) {
             <div style={styles.statLabel}>Weapon</div>
             <div style={styles.statValue}>{weapon}</div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -510,22 +531,56 @@ export default function CharacterDetailPage({ characterId, onClose }) {
             <h3 style={styles.sectionTitle}>
               ⚡ Combat Skills
             </h3>
-            <div style={styles.skillsContainer}>
-              <div style={styles.skillCard}>
-                <div style={styles.skillName}>{skills.basic_attack_name || 'Basic Attack'}</div>
-                <div style={styles.skillDescription}>{skills.basic_attack_description || 'Loading...'}</div>
+            
+            {/* Basic Attack Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', borderBottom: '1px solid rgba(102, 126, 234, 0.2)', paddingBottom: '8px' }}>
+                {character.name} - Basic Attack
+              </h4>
+              <div style={styles.skillsContainer}>
+                <div style={styles.skillCard}>
+                  <div style={styles.skillName}>{skills.basic_attack_name || 'Basic Attack'}</div>
+                  <div style={styles.skillDescription}>{skills.basic_attack_description || 'Loading...'}</div>
+                </div>
               </div>
-              <div style={styles.skillCard}>
-                <div style={styles.skillName}>{skills.normal_skill_name || 'Normal Skill'}</div>
-                <div style={styles.skillDescription}>{skills.normal_skill_description || 'Loading...'}</div>
+            </div>
+
+            {/* Normal Skill Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', borderBottom: '1px solid rgba(102, 126, 234, 0.2)', paddingBottom: '8px' }}>
+                {character.name} - Normal Skill
+              </h4>
+              <div style={styles.skillsContainer}>
+                <div style={styles.skillCard}>
+                  <div style={styles.skillName}>{skills.normal_skill_name || 'Normal Skill'}</div>
+                  <div style={styles.skillDescription}>{skills.normal_skill_description || 'Loading...'}</div>
+                </div>
               </div>
-              <div style={styles.skillCard}>
-                <div style={styles.skillName}>{skills.combo_skill_name || 'Combo Skill'}</div>
-                <div style={styles.skillDescription}>{skills.combo_skill_description || 'Loading...'}</div>
+            </div>
+
+            {/* Combo Skill Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', borderBottom: '1px solid rgba(102, 126, 234, 0.2)', paddingBottom: '8px' }}>
+                {character.name} - Combo Skill
+              </h4>
+              <div style={styles.skillsContainer}>
+                <div style={styles.skillCard}>
+                  <div style={styles.skillName}>{skills.combo_skill_name || 'Combo Skill'}</div>
+                  <div style={styles.skillDescription}>{skills.combo_skill_description || 'Loading...'}</div>
+                </div>
               </div>
-              <div style={styles.skillCard}>
+            </div>
+
+            {/* Ultimate Skill Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', borderBottom: '1px solid rgba(102, 126, 234, 0.2)', paddingBottom: '8px' }}>
+                {character.name} - Ultimate
+              </h4>
+              <div style={styles.skillsContainer}>
+                <div style={styles.skillCard}>
                   <div style={styles.skillName}>{skills.ultimate_name || 'Ultimate'}</div>
-                <div style={styles.skillDescription}>{skills.ultimate_description || 'Loading...'}</div>
+                  <div style={styles.skillDescription}>{skills.ultimate_description || 'Loading...'}</div>
+                </div>
               </div>
             </div>
           </div>

@@ -32,8 +32,17 @@ const styles = {
     padding: '25px',
     backgroundColor: '#0a0e27',
     minHeight: '100vh',
-    marginLeft: '170px',
-    marginTop: '80px'
+    marginLeft: '0',
+    marginTop: '0',
+    position: 'fixed',
+    top: '80px',
+    left: '190px',
+    right: '0',
+    bottom: '0',
+    zIndex: 500,
+    overflowY: 'auto',
+    width: 'calc(100% - 190px)',
+    height: 'calc(100vh - 80px)'
   },
   closeButton: {
     position: 'fixed',
@@ -154,7 +163,9 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-    paddingRight: '20px'
+    paddingRight: '20px',
+    overflowY: 'auto',
+    maxHeight: 'calc(100vh - 160px)'
   },
   section: {
     marginBottom: '20px'

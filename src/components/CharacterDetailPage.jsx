@@ -183,7 +183,12 @@ const styles = {
   },
   skillsContainer: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: '1fr',
+    gap: '12px'
+  },
+  comboSkillContainer: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
     gap: '12px'
   },
   skillCard: {
@@ -563,7 +568,7 @@ export default function CharacterDetailPage({ characterId, onClose }) {
               <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', borderBottom: '1px solid rgba(102, 126, 234, 0.2)', paddingBottom: '8px' }}>
                 {character.name} - Combo Skill
               </h4>
-              <div style={styles.skillsContainer}>
+              <div style={styles.comboSkillContainer}>
                 <div style={styles.skillCard}>
                   <div style={styles.skillName}>{skills.combo_skill_name || 'Combo Skill'}</div>
                   <div style={styles.skillDescription}>{skills.combo_skill_description || 'Loading...'}</div>

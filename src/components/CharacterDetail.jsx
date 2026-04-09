@@ -23,9 +23,9 @@ const styles = {
     gap: '20px'
   },
   closeButton: {
-    position: 'fixed',
-    top: '90px',
-    right: '30px',
+    position: 'absolute',
+    top: '15px',
+    right: '15px',
     background: 'none',
     border: 'none',
     color: '#fff',
@@ -36,9 +36,10 @@ const styles = {
   imageContainer: {
     position: 'relative',
     width: '100%',
-    height: '450px',
+    height: '380px',
     overflow: 'hidden',
-    borderRadius: '15px'
+    borderRadius: '15px',
+    flexShrink: 0
   },
   image: {
     width: '100%',
@@ -98,7 +99,7 @@ const styles = {
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '15px',
     marginBottom: '25px'
   },
@@ -139,12 +140,58 @@ const styles = {
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
     padding: '15px',
     borderRadius: '10px',
-    fontFamily: 'Roboto, sans-serif'
+    fontFamily: 'Roboto, sans-serif',
+    minHeight: '80px'
+  },
+  imageWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
+    width: '280px',
+    flexShrink: 0,
+    padding: '30px 20px',
+    borderRight: '1px solid rgba(102, 126, 234, 0.2)'
   },
   loading: {
     textAlign: 'center',
     padding: '50px',
     color: '#667eea'
+  },
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100vh',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    alignItems: 'stretch',
+    justifyContent: 'stretch',
+    zIndex: 1000
+  },
+  modal: {
+    backgroundColor: '#0a0e27',
+    borderRadius: '20px',
+    width: '100%',
+    height: '100vh',
+    maxWidth: 'none',
+    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+    border: '1px solid rgba(102, 126, 234, 0.3)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    position: 'relative'
+  },
+  content: {
+    flex: 1,
+    padding: '30px',
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    width: '100%'
   }
 };
 
@@ -254,18 +301,6 @@ export default function CharacterDetail({ characterId, onClose }) {
           ×
         </button>
 
-        {/* Image */}
-        <div style={styles.imageContainer}>
-          {character.image_url ? (
-            <img src={character.image_url} alt={character.name} style={styles.image} />
-          ) : (
-            <div style={styles.imagePlaceholder}>No Image Available</div>
-          )}
-          <div style={getTierStyle(character.tier)}>
-            {character.tier || 'T3'}
-          </div>
-        </div>
-
         {/* Content */}
         <div style={styles.content}>
           {/* Header */}
@@ -273,6 +308,9 @@ export default function CharacterDetail({ characterId, onClose }) {
             <div>
               <h1 style={styles.name}>{character.name}</h1>
               <div style={styles.badges}>
+                <span style={getTierStyle(character.tier)}>
+                  {character.tier || 'T3'}
+                </span>
                 <span style={getElementStyle(element)}>{element}</span>
                 <span style={{ ...styles.badge, backgroundColor: '#667eea', color: '#fff' }}>
                   {role}

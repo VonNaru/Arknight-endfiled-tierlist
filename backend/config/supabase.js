@@ -12,6 +12,8 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
+console.log('✓ Supabase connected to:', supabaseUrl);
+
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper function untuk handle errors

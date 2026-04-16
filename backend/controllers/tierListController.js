@@ -49,16 +49,16 @@ export async function getTierListById(req, res) {
       .from('tier_list_items')
       .select(`
         *,
-        tiers:tiers_id(id, name, color_code),
+        tiers(id, name, color_code),
         characters(
           id,
           name,
           image_url,
-          tiers:tiers_id(name, color_code),
-          elements:elements_id(name, color),
-          rarities:rarities_id(name, display_text),
-          roles:roles_id(name),
-          weapons:weapons_id(name, damage)
+          tiers(name, color_code),
+          elements(name, color_code),
+          rarities(name, display_text),
+          roles(name),
+          weapons(name, damage)
         )
       `)
       .eq('tier_list_id', id)

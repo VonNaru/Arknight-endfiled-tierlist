@@ -3,11 +3,14 @@ import { supabase } from '../config/supabase.js';
 // Get all favorites for a user
 export async function getUserFavorites(req, res) {
   try {
-    const userId = req.query.userId || req.body.userId;
+    // Get userId from Supabase Auth token
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Unauthorized - No valid session' });
     }
+
+    const userId = user.id;
 
     const { data, error } = await supabase
       .from('favorites')
@@ -18,16 +21,16 @@ export async function getUserFavorites(req, res) {
         tiers_id,
         notes,
         created_at,
-        tiers:tiers_id(id, name, color_code),
+        tiers(id, name, color_code),
         characters (
           id,
           name,
           image_url,
-          tiers:tiers_id(name, color_code),
-          elements:elements_id(name, color),
-          rarities:rarities_id(name, display_text),
-          roles:roles_id(name),
-          weapons:weapons_id(name, damage)
+          tiers(name, color_code),
+          elements(name, color_code),
+          rarities(name, display_text),
+          roles(name),
+          weapons(name, damage)
         )
       `)
       .eq('user_id', userId)
@@ -63,11 +66,18 @@ export async function getUserFavorites(req, res) {
 // Add character to favorites
 export async function addFavorite(req, res) {
   try {
-    const { userId, characterId, tiersId, notes } = req.body;
+    // Get userId from Supabase Auth token
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Unauthorized - No valid session' });
+    }
 
-    if (!userId || !characterId || !tiersId) {
+    const { characterId, tiersId, notes } = req.body;
+
+    if (!characterId || !tiersId) {
       return res.status(400).json({ 
-        error: 'User ID, Character ID, and Tier ID are required' 
+        error: 'Character ID and Tier ID are required' 
       });
     }
 
@@ -75,7 +85,7 @@ export async function addFavorite(req, res) {
     const { data, error } = await supabase
       .from('favorites')
       .insert([{
-        user_id: userId,
+        user_id: user.id,
         character_id: characterId,
         tiers_id: tiersId,
         notes: notes || null

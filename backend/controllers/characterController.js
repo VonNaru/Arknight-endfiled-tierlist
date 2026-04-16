@@ -5,30 +5,14 @@ export async function getAllCharacters(req, res) {
   try {
     const { data, error } = await supabase
       .from('characters')
-      .select(`
-        *,
-        tiers:tiers_id(name, color_code),
-        roles:roles_id(name),
-        elements:elements_id(name, color),
-        weapons:weapons_id(name, damage),
-        rarities:rarities_id(name, display_text)
-      `)
+      .select('*')
       .order('name');
     
     if (error) throw error;
     
-    // Flatten the response to include related names directly
-    const flattened = data.map(char => ({
-      ...char,
-      tier_name: char.tiers?.name || 'Unknown',
-      role_name: char.roles?.name || 'Unknown',
-      element_name: char.elements?.name || 'Unknown',
-      weapon_name: char.weapons?.name || 'Unknown',
-      rarity_name: char.rarities?.name || 'Unknown'
-    }));
-    
-    res.json(flattened);
+    res.json(data);
   } catch (error) {
+    console.error('Error in getAllCharacters:', error);
     res.status(500).json({ error: error.message });
   }
 }
@@ -40,14 +24,7 @@ export async function getCharacterById(req, res) {
     
     const { data, error } = await supabase
       .from('characters')
-      .select(`
-        *,
-        tiers:tiers_id(name, color_code),
-        roles:roles_id(name),
-        elements:elements_id(name, color),
-        weapons:weapons_id(name, damage),
-        rarities:rarities_id(name, display_text)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
     
@@ -58,18 +35,9 @@ export async function getCharacterById(req, res) {
       throw error;
     }
     
-    // Flatten the response
-    const flattened = {
-      ...data,
-      tier_name: data.tiers?.name || 'Unknown',
-      role_name: data.roles?.name || 'Unknown',
-      element_name: data.elements?.name || 'Unknown',
-      weapon_name: data.weapons?.name || 'Unknown',
-      rarity_name: data.rarities?.name || 'Unknown'
-    };
-    
-    res.json(flattened);
+    res.json(data);
   } catch (error) {
+    console.error('Error in getCharacterById:', error);
     res.status(500).json({ error: error.message });
   }
 }
@@ -97,11 +65,11 @@ export async function addCharacter(req, res) {
       }])
       .select(`
         *,
-        tiers:tiers_id(name, color_code),
-        roles:roles_id(name),
-        elements:elements_id(name, color),
-        weapons:weapons_id(name, damage),
-        rarities:rarities_id(name, display_text)
+        tiers(name, color_code),
+        roles(name),
+        elements(name, color_code),
+        weapons(name, damage),
+        rarities(name, display_text)
       `)
       .single();
     
@@ -139,11 +107,11 @@ export async function updateCharacter(req, res) {
       .eq('id', id)
       .select(`
         *,
-        tiers:tiers_id(name, color_code),
-        roles:roles_id(name),
-        elements:elements_id(name, color),
-        weapons:weapons_id(name, damage),
-        rarities:rarities_id(name, display_text)
+        tiers(name, color_code),
+        roles(name),
+        elements(name, color_code),
+        weapons(name, damage),
+        rarities(name, display_text)
       `)
       .single();
     
